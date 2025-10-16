@@ -33,6 +33,18 @@ const eventSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  primaryImage: {
+    type: String,
+    default: ''
+  },
+  additionalImages: {
+    type: [String],
+    default: []
+  },
+  additionalDescriptions: {
+    type: [String],
+    default: []
+  },
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected'],

@@ -41,19 +41,84 @@ const CreateClub = () => {
     description: '',
     image: ''
   });
-  const { showSuccess, showError } = useToast();
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const { showSuccess, showError, showInfo } = useToast();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        showError('Image size should be less than 5MB');
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        showError('Please select a valid image file');
+        return;
+      }
+
+      setImageFile(file);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async () => {
+    if (!imageFile) return null;
+
+    setUploading(true);
+    showInfo('Uploading club image...');
+
+    try {
+      const uploadData = new FormData();
+      uploadData.append('image', imageFile);
+
+      const response = await api.post('/upload/upload', uploadData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      return response.data.url;
+    } catch (error) {
+      showError('Failed to upload image');
+      console.error('Upload error:', error);
+      return null;
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await api.post('/faculty/create-club', formData);
+      let imageUrl = formData.image;
+      if (imageFile) {
+        imageUrl = await uploadImage();
+        if (!imageUrl) return;
+      }
+
+      const clubData = {
+        ...formData,
+        image: imageUrl
+      };
+
+      const response = await api.post('/faculty/create-club', clubData);
       showSuccess(response.data.message || 'Club created successfully! 🎭');
       setFormData({ name: '', description: '', image: '' });
+      setImageFile(null);
+      setImagePreview(null);
     } catch (err) {
       showError(err.response?.data?.message || 'Failed to create club');
     }
@@ -86,17 +151,43 @@ const CreateClub = () => {
             />
           </div>
           <div className="form-group">
-            <label>Image URL (optional)</label>
+            <label>Club Image (optional)</label>
             <input
-              type="text"
-              name="image"
-              value={formData.image}
-              onChange={handleChange}
-              placeholder="https://example.com/club-image.jpg"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{
+                padding: 'var(--space-sm)',
+                border: '2px dashed var(--primary-gradient-start)',
+                borderRadius: '12px',
+                backgroundColor: 'rgba(102, 126, 234, 0.05)',
+                cursor: 'pointer'
+              }}
             />
+            {imagePreview && (
+              <div style={{ marginTop: 'var(--space-md)', textAlign: 'center' }}>
+                <img
+                  src={imagePreview}
+                  alt="Club Preview"
+                  style={{
+                    maxWidth: '300px',
+                    maxHeight: '200px',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                  }}
+                />
+                <p style={{
+                  marginTop: 'var(--space-sm)',
+                  fontSize: '0.9rem',
+                  color: 'var(--text-secondary)'
+                }}>
+                  Preview
+                </p>
+              </div>
+            )}
           </div>
-          <button type="submit" style={{ width: '100%' }}>
-            Create Club →
+          <button type="submit" style={{ width: '100%' }} disabled={uploading}>
+            {uploading ? '📤 Uploading...' : '🎭 Create Club →'}
           </button>
         </form>
       </div>

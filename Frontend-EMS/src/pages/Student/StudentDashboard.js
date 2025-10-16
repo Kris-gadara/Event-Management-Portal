@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
+import EventCard from '../../components/EventCard';
+import EventDetail from './EventDetail';
 import { useToast } from '../../components/Toast';
 import api from '../../utils/api';
 
@@ -41,6 +43,7 @@ const ViewEvents = () => {
   const [registeredEvents, setRegisteredEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const { showSuccess, showError } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchEvents();
@@ -69,78 +72,105 @@ const ViewEvents = () => {
 
   const handleRegister = async (eventId) => {
     try {
-      await api.post(`/student/register-event/${eventId}`);
-      showSuccess('Successfully registered for event! 🎉');
-      fetchEvents();
+      const response = await api.post(`/student/register-event/${eventId}`);
+      showSuccess(response.data.message || 'Successfully registered for event! 🎉');
       fetchMyEvents();
     } catch (error) {
       showError(error.response?.data?.message || 'Failed to register for event');
     }
   };
 
+  const handleViewDetails = (eventId) => {
+    navigate(`/student/events/${eventId}`);
+  };
+
   const isRegistered = (eventId) => registeredEvents.includes(eventId);
 
   if (loading) return (
     <div className="dashboard">
-      <div className="section">
-        <h2>Loading events...</h2>
+      <div className="section" style={{
+        minHeight: '60vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '3rem', marginBottom: 'var(--space-md)' }}>⏳</div>
+          <h2>Loading events...</h2>
+        </div>
       </div>
     </div>
   );
 
   return (
     <div className="dashboard">
-      <h2>Available Events 🎉</h2>
-      <div className="card-grid">
+      <div className="section">
+        <h2 style={{
+          fontSize: '2.5rem',
+          background: 'linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end))',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          marginBottom: 'var(--space-lg)',
+          textAlign: 'center'
+        }}>
+          🎉 Available Events
+        </h2>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          marginBottom: 'var(--space-xxl)'
+        }}>
+          <div style={{
+            display: 'inline-block',
+            padding: '14px 28px',
+            borderRadius: '30px',
+            marginBottom: "50px",
+            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.12), rgba(118, 75, 162, 0.12))',
+            border: '2px solid var(--primary-gradient-start)',
+            boxShadow: '0 2px 8px rgba(102, 126, 234, 0.15)'
+          }}>
+            <p style={{
+              fontSize: '1.05rem',
+              fontWeight: '600',
+              color: 'var(--primary-gradient-start)',
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <span>✨</span>
+              <span>Discover exciting campus events and register to participate</span>
+            </p>
+          </div>
+        </div>
+
         {events.length === 0 ? (
-          <div className="card">
-            <p style={{ textAlign: 'center', color: 'var(--text-light)' }}>No events available at the moment.</p>
+          <div className="card" style={{
+            textAlign: 'center',
+            padding: 'var(--space-xxl)'
+          }}>
+            <div style={{ fontSize: '4rem', marginBottom: 'var(--space-md)' }}>📭</div>
+            <h3 style={{ marginBottom: 'var(--space-sm)' }}>No Events Available</h3>
+            <p style={{ color: 'var(--text-secondary)' }}>
+              Check back soon for exciting upcoming events!
+            </p>
           </div>
         ) : (
-          events.map((event) => (
-            <div key={event._id} className="card">
-              {event.image && (
-                <img
-                  src={event.image}
-                  alt={event.name}
-                  style={{
-                    width: '100%',
-                    height: '180px',
-                    objectFit: 'cover',
-                    borderRadius: 'var(--radius-md)',
-                    marginBottom: 'var(--space-md)'
-                  }}
-                />
-              )}
-              <h3 style={{ marginBottom: 'var(--space-sm)' }}>{event.name}</h3>
-              <p style={{ marginBottom: 'var(--space-sm)', color: 'var(--text-light)' }}>
-                {event.description}
-              </p>
-              <div style={{ marginBottom: 'var(--space-sm)' }}>
-                <p><strong>📅 Date:</strong> {new Date(event.date).toLocaleDateString()}</p>
-                <p><strong>🕐 Time:</strong> {event.time}</p>
-                <p><strong>📍 Venue:</strong> {event.venue}</p>
-                <p><strong>🎭 Club:</strong> {event.club?.name || 'N/A'}</p>
-              </div>
-              {isRegistered(event._id) ? (
-                <button
-                  className="btn-disabled"
-                  disabled
-                  style={{ width: '100%', marginTop: 'var(--space-md)' }}
-                >
-                  ✓ Already Registered
-                </button>
-              ) : (
-                <button
-                  onClick={() => handleRegister(event._id)}
-                  className="btn-primary"
-                  style={{ width: '100%', marginTop: 'var(--space-md)' }}
-                >
-                  Register for Event →
-                </button>
-              )}
-            </div>
-          ))
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+            gap: 'var(--space-xl)'
+          }}>
+            {events.map((event) => (
+              <EventCard
+                key={event._id}
+                event={event}
+                isRegistered={isRegistered(event._id)}
+                onRegister={handleRegister}
+                onViewDetails={handleViewDetails}
+              />
+            ))}
+          </div>
         )}
       </div>
     </div>
@@ -324,6 +354,7 @@ const StudentDashboard = () => {
       <Routes>
         <Route path="/" element={<StudentHome />} />
         <Route path="/events" element={<ViewEvents />} />
+        <Route path="/events/:id" element={<EventDetail />} />
         <Route path="/my-events" element={<MyEvents />} />
         <Route path="/clubs" element={<ViewClubs />} />
       </Routes>

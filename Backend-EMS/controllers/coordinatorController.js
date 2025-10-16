@@ -3,7 +3,19 @@ const Event = require('../models/eventModel');
 // Create Event
 exports.createEvent = async (req, res) => {
   try {
-    const { name, description, date, time, venue, address, contactEmail, image } = req.body;
+    const {
+      name,
+      description,
+      date,
+      time,
+      venue,
+      address,
+      contactEmail,
+      image,
+      primaryImage,
+      additionalImages,
+      additionalDescriptions
+    } = req.body;
 
     if (req.user.role !== 'coordinator') {
       return res.status(403).json({ message: 'Only coordinators can create events' });
@@ -17,7 +29,10 @@ exports.createEvent = async (req, res) => {
       venue,
       address,
       contactEmail,
-      image: image || '',
+      image: image || primaryImage || '', // Fallback for backward compatibility
+      primaryImage: primaryImage || image || '',
+      additionalImages: additionalImages || [],
+      additionalDescriptions: additionalDescriptions || [],
       createdBy: req.user._id,
       club: req.user.assignedClub,
       status: 'pending'
@@ -46,7 +61,19 @@ exports.getMyEvents = async (req, res) => {
 exports.updateEvent = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, date, time, venue, address, contactEmail, image } = req.body;
+    const {
+      name,
+      description,
+      date,
+      time,
+      venue,
+      address,
+      contactEmail,
+      image,
+      primaryImage,
+      additionalImages,
+      additionalDescriptions
+    } = req.body;
 
     const event = await Event.findOne({ _id: id, createdBy: req.user._id });
 
@@ -65,7 +92,10 @@ exports.updateEvent = async (req, res) => {
     event.venue = venue || event.venue;
     event.address = address || event.address;
     event.contactEmail = contactEmail || event.contactEmail;
-    event.image = image || event.image;
+    event.image = image || primaryImage || event.image;
+    event.primaryImage = primaryImage || image || event.primaryImage;
+    event.additionalImages = additionalImages || event.additionalImages;
+    event.additionalDescriptions = additionalDescriptions || event.additionalDescriptions;
 
     await event.save();
 
