@@ -10,6 +10,7 @@ const facultyRoutes = require('./routes/facultyRoutes');
 const coordinatorRoutes = require('./routes/coordinatorRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const publicRoutes = require('./routes/publicRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 const User = require('./models/userModel');
 
@@ -27,6 +28,7 @@ app.use('/api/faculty', facultyRoutes);
 app.use('/api/coordinator', coordinatorRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/public', publicRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Root route
 app.get('/', (req, res) => {

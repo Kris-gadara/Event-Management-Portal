@@ -37,7 +37,7 @@ router.post('/login', async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        photo: user.photo
+        image: user.photo // Map photo field to image for frontend consistency
       }
     });
   } catch (error) {

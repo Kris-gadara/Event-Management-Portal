@@ -51,7 +51,7 @@ const CoordinatorHome = () => {
 };
 
 const CreateEvent = () => {
-  const { showSuccess, showError, showWarning } = useToast();
+  const { showSuccess, showError, showWarning, showInfo } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -59,12 +59,72 @@ const CreateEvent = () => {
     time: '',
     venue: '',
     address: '',
-    contactEmail: '',
-    image: ''
+    contactEmail: ''
   });
+
+  // State for 4 images: 1 primary + 3 additional
+  const [primaryImageFile, setPrimaryImageFile] = useState(null);
+  const [primaryImagePreview, setPrimaryImagePreview] = useState(null);
+  const [additionalImage1File, setAdditionalImage1File] = useState(null);
+  const [additionalImage1Preview, setAdditionalImage1Preview] = useState(null);
+  const [additionalImage2File, setAdditionalImage2File] = useState(null);
+  const [additionalImage2Preview, setAdditionalImage2Preview] = useState(null);
+  const [additionalImage3File, setAdditionalImage3File] = useState(null);
+  const [additionalImage3Preview, setAdditionalImage3Preview] = useState(null);
+
+  // State for 3 additional descriptions
+  const [additionalDesc1, setAdditionalDesc1] = useState('');
+  const [additionalDesc2, setAdditionalDesc2] = useState('');
+  const [additionalDesc3, setAdditionalDesc3] = useState('');
+
+  const [uploading, setUploading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleImageChange = (e, setFile, setPreview, imageName) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        showError(`${imageName} size should be less than 5MB`);
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        showError(`Please select a valid image file for ${imageName}`);
+        return;
+      }
+
+      setFile(file);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadSingleImage = async (file, imageName) => {
+    if (!file) return null;
+
+    try {
+      const uploadData = new FormData();
+      uploadData.append('image', file);
+
+      const response = await api.post('/upload/upload', uploadData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      return response.data.url;
+    } catch (error) {
+      showError(`Failed to upload ${imageName}`);
+      console.error(`Upload error for ${imageName}:`, error);
+      return null;
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -76,9 +136,57 @@ const CreateEvent = () => {
       return;
     }
 
+    if (!primaryImageFile) {
+      showWarning('Please upload a primary image for the event card');
+      return;
+    }
+
+    setUploading(true);
+    showInfo('Uploading event images...');
+
     try {
-      const response = await api.post('/coordinator/create-event', formData);
+      // Upload all images
+      const primaryImageUrl = await uploadSingleImage(primaryImageFile, 'Primary Image');
+      if (!primaryImageUrl) {
+        setUploading(false);
+        return;
+      }
+
+      const additionalImageUrls = [];
+
+      if (additionalImage1File) {
+        const url = await uploadSingleImage(additionalImage1File, 'Additional Image 1');
+        if (url) additionalImageUrls.push(url);
+      }
+
+      if (additionalImage2File) {
+        const url = await uploadSingleImage(additionalImage2File, 'Additional Image 2');
+        if (url) additionalImageUrls.push(url);
+      }
+
+      if (additionalImage3File) {
+        const url = await uploadSingleImage(additionalImage3File, 'Additional Image 3');
+        if (url) additionalImageUrls.push(url);
+      }
+
+      // Collect additional descriptions
+      const additionalDescriptions = [];
+      if (additionalDesc1.trim()) additionalDescriptions.push(additionalDesc1.trim());
+      if (additionalDesc2.trim()) additionalDescriptions.push(additionalDesc2.trim());
+      if (additionalDesc3.trim()) additionalDescriptions.push(additionalDesc3.trim());
+
+      const eventData = {
+        ...formData,
+        primaryImage: primaryImageUrl,
+        additionalImages: additionalImageUrls,
+        additionalDescriptions: additionalDescriptions,
+        image: primaryImageUrl // Keep for backward compatibility
+      };
+
+      const response = await api.post('/coordinator/create-event', eventData);
       showSuccess(response.data.message || 'Event created successfully! Waiting for faculty approval.');
+
+      // Reset form
       setFormData({
         name: '',
         description: '',
@@ -86,11 +194,23 @@ const CreateEvent = () => {
         time: '',
         venue: '',
         address: '',
-        contactEmail: '',
-        image: ''
+        contactEmail: ''
       });
+      setPrimaryImageFile(null);
+      setPrimaryImagePreview(null);
+      setAdditionalImage1File(null);
+      setAdditionalImage1Preview(null);
+      setAdditionalImage2File(null);
+      setAdditionalImage2Preview(null);
+      setAdditionalImage3File(null);
+      setAdditionalImage3Preview(null);
+      setAdditionalDesc1('');
+      setAdditionalDesc2('');
+      setAdditionalDesc3('');
     } catch (err) {
       showError(err.response?.data?.message || 'Failed to create event');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -181,18 +301,251 @@ const CreateEvent = () => {
               required
             />
           </div>
+
+          {/* Primary Image - Required for Event Card */}
           <div className="form-group">
-            <label>Image URL (optional)</label>
+            <label style={{
+              fontWeight: '600',
+              color: 'var(--primary-gradient-start)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-xs)'
+            }}>
+              🖼️ Primary Image (Required - for Event Card)
+            </label>
             <input
-              type="text"
-              name="image"
-              value={formData.image}
-              onChange={handleChange}
-              placeholder="https://example.com/event-image.jpg"
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleImageChange(e, setPrimaryImageFile, setPrimaryImagePreview, 'Primary Image')}
+              style={{
+                padding: 'var(--space-sm)',
+                border: '2px solid var(--primary-gradient-start)',
+                borderRadius: '12px',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                cursor: 'pointer'
+              }}
+              required
             />
+            {primaryImagePreview && (
+              <div style={{ marginTop: 'var(--space-md)', textAlign: 'center' }}>
+                <img
+                  src={primaryImagePreview}
+                  alt="Primary Preview"
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: '300px',
+                    borderRadius: '12px',
+                    boxShadow: '0 8px 16px rgba(102, 126, 234, 0.3)'
+                  }}
+                />
+                <p style={{
+                  marginTop: 'var(--space-sm)',
+                  fontSize: '0.9rem',
+                  color: 'var(--primary-gradient-start)',
+                  fontWeight: '500'
+                }}>
+                  ✓ Primary Image Preview
+                </p>
+              </div>
+            )}
           </div>
-          <button type="submit" className="btn-primary" style={{ width: '100%', fontSize: '1.1rem' }}>
-            🎪 Create Event →
+
+          {/* Additional Images - Optional for Detail Page */}
+          <div className="form-group">
+            <label style={{
+              fontWeight: '600',
+              color: 'var(--secondary-gradient-start)',
+              marginBottom: 'var(--space-sm)'
+            }}>
+              📸 Additional Images (Optional - for Detail Page)
+            </label>
+            <p style={{
+              fontSize: '0.9rem',
+              color: 'var(--text-secondary)',
+              marginBottom: 'var(--space-md)'
+            }}>
+              Upload up to 3 additional images to display in the event detail page
+            </p>
+
+            {/* Additional Image 1 */}
+            <div style={{ marginBottom: 'var(--space-lg)', padding: 'var(--space-md)', backgroundColor: 'rgba(118, 75, 162, 0.03)', borderRadius: '12px' }}>
+              <label style={{ fontSize: '0.95rem', color: 'var(--secondary-gradient-start)', marginBottom: 'var(--space-sm)', display: 'block', fontWeight: '600' }}>
+                📸 Image & Description Set 1
+              </label>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-xs)', display: 'block' }}>
+                Image 1
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageChange(e, setAdditionalImage1File, setAdditionalImage1Preview, 'Additional Image 1')}
+                style={{
+                  padding: 'var(--space-sm)',
+                  border: '2px dashed var(--secondary-gradient-start)',
+                  borderRadius: '12px',
+                  backgroundColor: 'rgba(118, 75, 162, 0.05)',
+                  cursor: 'pointer',
+                  width: '100%'
+                }}
+              />
+              {additionalImage1Preview && (
+                <div style={{ marginTop: 'var(--space-sm)' }}>
+                  <img
+                    src={additionalImage1Preview}
+                    alt="Additional 1 Preview"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '200px',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                    }}
+                  />
+                </div>
+              )}
+
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 'var(--space-md)', marginBottom: 'var(--space-xs)', display: 'block' }}>
+                Description 1 (appears opposite to Image 1 on detail page)
+              </label>
+              <textarea
+                value={additionalDesc1}
+                onChange={(e) => setAdditionalDesc1(e.target.value)}
+                placeholder="Enter description for this section (e.g., what attendees will learn, activities planned, etc.)"
+                rows="4"
+                style={{
+                  width: '100%',
+                  padding: 'var(--space-sm)',
+                  border: '2px dashed var(--secondary-gradient-start)',
+                  borderRadius: '12px',
+                  backgroundColor: 'rgba(118, 75, 162, 0.05)',
+                  fontSize: '0.95rem',
+                  fontFamily: 'inherit',
+                  resize: 'vertical'
+                }}
+              />
+            </div>
+
+            {/* Additional Image 2 */}
+            <div style={{ marginBottom: 'var(--space-lg)', padding: 'var(--space-md)', backgroundColor: 'rgba(118, 75, 162, 0.03)', borderRadius: '12px' }}>
+              <label style={{ fontSize: '0.95rem', color: 'var(--secondary-gradient-start)', marginBottom: 'var(--space-sm)', display: 'block', fontWeight: '600' }}>
+                📸 Image & Description Set 2
+              </label>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-xs)', display: 'block' }}>
+                Image 2
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageChange(e, setAdditionalImage2File, setAdditionalImage2Preview, 'Additional Image 2')}
+                style={{
+                  padding: 'var(--space-sm)',
+                  border: '2px dashed var(--secondary-gradient-start)',
+                  borderRadius: '12px',
+                  backgroundColor: 'rgba(118, 75, 162, 0.05)',
+                  cursor: 'pointer',
+                  width: '100%'
+                }}
+              />
+              {additionalImage2Preview && (
+                <div style={{ marginTop: 'var(--space-sm)' }}>
+                  <img
+                    src={additionalImage2Preview}
+                    alt="Additional 2 Preview"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '200px',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                    }}
+                  />
+                </div>
+              )}
+
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 'var(--space-md)', marginBottom: 'var(--space-xs)', display: 'block' }}>
+                Description 2 (appears opposite to Image 2 on detail page)
+              </label>
+              <textarea
+                value={additionalDesc2}
+                onChange={(e) => setAdditionalDesc2(e.target.value)}
+                placeholder="Enter description for this section (e.g., benefits, requirements, what to expect, etc.)"
+                rows="4"
+                style={{
+                  width: '100%',
+                  padding: 'var(--space-sm)',
+                  border: '2px dashed var(--secondary-gradient-start)',
+                  borderRadius: '12px',
+                  backgroundColor: 'rgba(118, 75, 162, 0.05)',
+                  fontSize: '0.95rem',
+                  fontFamily: 'inherit',
+                  resize: 'vertical'
+                }}
+              />
+            </div>
+
+            {/* Additional Image 3 */}
+            <div style={{ marginBottom: 'var(--space-lg)', padding: 'var(--space-md)', backgroundColor: 'rgba(118, 75, 162, 0.03)', borderRadius: '12px' }}>
+              <label style={{ fontSize: '0.95rem', color: 'var(--secondary-gradient-start)', marginBottom: 'var(--space-sm)', display: 'block', fontWeight: '600' }}>
+                📸 Image & Description Set 3
+              </label>
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-xs)', display: 'block' }}>
+                Image 3
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageChange(e, setAdditionalImage3File, setAdditionalImage3Preview, 'Additional Image 3')}
+                style={{
+                  padding: 'var(--space-sm)',
+                  border: '2px dashed var(--secondary-gradient-start)',
+                  borderRadius: '12px',
+                  backgroundColor: 'rgba(118, 75, 162, 0.05)',
+                  cursor: 'pointer',
+                  width: '100%'
+                }}
+              />
+              {additionalImage3Preview && (
+                <div style={{ marginTop: 'var(--space-sm)' }}>
+                  <img
+                    src={additionalImage3Preview}
+                    alt="Additional 3 Preview"
+                    style={{
+                      maxWidth: '100%',
+                      maxHeight: '200px',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                    }}
+                  />
+                </div>
+              )}
+
+              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 'var(--space-md)', marginBottom: 'var(--space-xs)', display: 'block' }}>
+                Description 3 (appears opposite to Image 3 on detail page)
+              </label>
+              <textarea
+                value={additionalDesc3}
+                onChange={(e) => setAdditionalDesc3(e.target.value)}
+                placeholder="Enter description for this section (e.g., special highlights, prizes, refreshments, etc.)"
+                rows="4"
+                style={{
+                  width: '100%',
+                  padding: 'var(--space-sm)',
+                  border: '2px dashed var(--secondary-gradient-start)',
+                  borderRadius: '12px',
+                  backgroundColor: 'rgba(118, 75, 162, 0.05)',
+                  fontSize: '0.95rem',
+                  fontFamily: 'inherit',
+                  resize: 'vertical'
+                }}
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="btn-primary"
+            style={{ width: '100%', fontSize: '1.1rem' }}
+            disabled={uploading}
+          >
+            {uploading ? '📤 Uploading Images...' : '🎪 Create Event →'}
           </button>
         </form>
       </div>
