@@ -43,21 +43,70 @@ const RegisterFaculty = () => {
     password: '',
     photo: ''
   });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const { showSuccess, showError } = useToast();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPhotoFile(file);
+      // Create preview URL
+      const previewURL = URL.createObjectURL(file);
+      setPhotoPreview(previewURL);
+    }
+  };
+
+  const uploadToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'event_management');
 
     try {
-      const response = await api.post('/admin/register-faculty', formData);
+      const response = await fetch(
+        'https://api.cloudinary.com/v1_1/dyv0fhnnt/image/upload',
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+      const data = await response.json();
+      return data.secure_url;
+    } catch (error) {
+      throw new Error('Failed to upload image');
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setUploading(true);
+
+    try {
+      let photoUrl = formData.photo;
+
+      // Upload photo if a file was selected
+      if (photoFile) {
+        photoUrl = await uploadToCloudinary(photoFile);
+      }
+
+      const response = await api.post('/admin/register-faculty', {
+        ...formData,
+        photo: photoUrl
+      });
+
       showSuccess(response.data.message || 'Faculty registered successfully! ✅');
       setFormData({ name: '', email: '', contactNo: '', password: '', photo: '' });
+      setPhotoFile(null);
+      setPhotoPreview(null);
     } catch (err) {
       showError(err.response?.data?.message || 'Failed to register faculty');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -111,17 +160,40 @@ const RegisterFaculty = () => {
             />
           </div>
           <div className="form-group">
-            <label>Photo URL (optional)</label>
+            <label>Photo (optional)</label>
             <input
-              type="text"
-              name="photo"
-              value={formData.photo}
-              onChange={handleChange}
-              placeholder="https://example.com/photo.jpg"
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoChange}
+              style={{
+                padding: '10px',
+                border: '2px dashed var(--primary-gradient-start)',
+                borderRadius: '8px',
+                cursor: 'pointer'
+              }}
             />
+            {photoPreview && (
+              <div style={{ marginTop: 'var(--space-md)' }}>
+                <img
+                  src={photoPreview}
+                  alt="Preview"
+                  style={{
+                    width: '150px',
+                    height: '150px',
+                    objectFit: 'cover',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                  }}
+                />
+              </div>
+            )}
           </div>
-          <button type="submit" style={{ width: '100%' }}>
-            Register Faculty →
+          <button
+            type="submit"
+            style={{ width: '100%' }}
+            disabled={uploading}
+          >
+            {uploading ? '⏳ Uploading...' : 'Register Faculty →'}
           </button>
         </form>
       </div>

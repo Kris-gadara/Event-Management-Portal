@@ -537,6 +537,147 @@ const EventDetail = () => {
         </div>
       )}
 
+      {/* Reviews Section */}
+      {event.reviews && event.reviews.length > 0 && (
+        <div style={{
+          marginTop: 'var(--space-xxl)',
+          padding: 'var(--space-xl)',
+          background: 'linear-gradient(135deg, rgba(237, 137, 54, 0.05), rgba(246, 173, 85, 0.05))',
+          borderRadius: '16px',
+          border: '2px solid rgba(237, 137, 54, 0.15)'
+        }}>
+          <h3 style={{
+            fontSize: '2rem',
+            marginBottom: 'var(--space-xl)',
+            color: '#2d3748',
+            fontWeight: '700',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <span style={{ fontSize: '2.2rem' }}>⭐</span>
+            Student Reviews ({event.reviews.length})
+          </h3>
+
+          <div style={{
+            display: 'grid',
+            gap: 'var(--space-lg)'
+          }}>
+            {event.reviews.map((review, index) => (
+              <div
+                key={index}
+                style={{
+                  padding: 'var(--space-xl)',
+                  background: 'white',
+                  borderRadius: '12px',
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                {/* Review Header */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  marginBottom: 'var(--space-md)',
+                  flexWrap: 'wrap',
+                  gap: 'var(--space-sm)'
+                }}>
+                  <div>
+                    <h4 style={{
+                      fontSize: '1.1rem',
+                      fontWeight: '700',
+                      color: '#2d3748',
+                      marginBottom: 'var(--space-xs)'
+                    }}>
+                      {review.studentName}
+                    </h4>
+                    <p style={{
+                      fontSize: '0.85rem',
+                      color: '#a0aec0',
+                      margin: 0
+                    }}>
+                      {new Date(review.createdAt).toLocaleDateString('en-US', {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    </p>
+                  </div>
+
+                  {/* Star Rating */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '4px',
+                    fontSize: '1.3rem'
+                  }}>
+                    {[...Array(5)].map((_, i) => (
+                      <span
+                        key={i}
+                        style={{
+                          color: i < review.rating ? '#f6ad55' : '#e2e8f0',
+                          textShadow: i < review.rating ? '0 2px 4px rgba(246, 173, 85, 0.3)' : 'none'
+                        }}
+                      >
+                        {i < review.rating ? '⭐' : '☆'}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Review Comment */}
+                <p style={{
+                  fontSize: '1rem',
+                  lineHeight: '1.7',
+                  color: '#4a5568',
+                  margin: 0,
+                  padding: 'var(--space-md) 0 0 0',
+                  borderTop: '1px solid #f7fafc'
+                }}>
+                  {review.comment}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Average Rating Summary */}
+          {event.reviews.length > 1 && (
+            <div style={{
+              marginTop: 'var(--space-xl)',
+              padding: 'var(--space-lg)',
+              background: 'linear-gradient(135deg, rgba(246, 173, 85, 0.1), rgba(237, 137, 54, 0.1))',
+              borderRadius: '12px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                fontSize: '2.5rem',
+                fontWeight: '700',
+                color: '#ed8936',
+                marginBottom: 'var(--space-xs)'
+              }}>
+                {(event.reviews.reduce((sum, r) => sum + r.rating, 0) / event.reviews.length).toFixed(1)} ⭐
+              </div>
+              <p style={{
+                fontSize: '0.95rem',
+                color: '#718096',
+                margin: 0
+              }}>
+                Average rating from {event.reviews.length} {event.reviews.length === 1 ? 'review' : 'reviews'}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Bottom Register Button */}
       <div style={{
         marginTop: 'var(--space-xxl)',

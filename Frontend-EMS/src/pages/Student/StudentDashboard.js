@@ -3,6 +3,8 @@ import { Routes, Route, useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import EventCard from '../../components/EventCard';
 import EventDetail from './EventDetail';
+import ReviewForm from '../../components/ReviewForm';
+import FeedbackForm from '../../components/FeedbackForm';
 import { useToast } from '../../components/Toast';
 import api from '../../utils/api';
 
@@ -180,6 +182,8 @@ const ViewEvents = () => {
 const MyEvents = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reviewingEventId, setReviewingEventId] = useState(null);
+  const [feedbackingEventId, setFeedbackingEventId] = useState(null);
 
   useEffect(() => {
     fetchMyEvents();
@@ -194,6 +198,26 @@ const MyEvents = () => {
       console.error('Error fetching events:', error);
       setLoading(false);
     }
+  };
+
+  const isPastEvent = (eventDate) => {
+    return new Date(eventDate) < new Date();
+  };
+
+  const hasUserReviewed = (event, userId) => {
+    return event.reviews && event.reviews.some(review =>
+      review.student === userId || review.student._id === userId
+    );
+  };
+
+  const handleReviewSubmitted = () => {
+    setReviewingEventId(null);
+    fetchMyEvents(); // Refresh events to show new review
+  };
+
+  const handleFeedbackSubmitted = () => {
+    setFeedbackingEventId(null);
+    fetchMyEvents(); // Refresh events
   };
 
   if (loading) return (
@@ -219,35 +243,289 @@ const MyEvents = () => {
             </p>
           </div>
         ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table>
-              <thead>
-                <tr>
-                  <th>Event Name</th>
-                  <th>Date</th>
-                  <th>Time</th>
-                  <th>Venue</th>
-                  <th>Club</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {events.map((event) => (
-                  <tr key={event._id}>
-                    <td><strong>{event.name}</strong></td>
-                    <td>📅 {new Date(event.date).toLocaleDateString()}</td>
-                    <td>🕐 {event.time}</td>
-                    <td>📍 {event.venue}</td>
-                    <td>{event.club?.name || 'N/A'}</td>
-                    <td>
-                      <span className="badge badge-success">
-                        ✓ Registered
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div style={{
+            display: 'grid',
+            gap: 'var(--space-xl)'
+          }}>
+            {events.map((event) => {
+              const eventPassed = isPastEvent(event.date);
+              const userReviewed = hasUserReviewed(event, localStorage.getItem('userId'));
+
+              return (
+                <div key={event._id} className="card" style={{
+                  padding: 'var(--space-xl)',
+                  border: eventPassed ? '2px solid #48bb78' : '2px solid var(--primary-gradient-start)'
+                }}>
+                  {/* Event Header */}
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    marginBottom: 'var(--space-lg)',
+                    flexWrap: 'wrap',
+                    gap: 'var(--space-md)'
+                  }}>
+                    <div style={{ flex: '1', minWidth: '250px' }}>
+                      <h3 style={{
+                        fontSize: '1.5rem',
+                        marginBottom: 'var(--space-sm)',
+                        color: '#2d3748'
+                      }}>
+                        {event.name}
+                      </h3>
+                      <p style={{
+                        color: '#718096',
+                        lineHeight: '1.6',
+                        marginBottom: 'var(--space-md)'
+                      }}>
+                        {event.description}
+                      </p>
+                    </div>
+                    <div>
+                      {eventPassed ? (
+                        <span style={{
+                          padding: '8px 16px',
+                          borderRadius: '20px',
+                          backgroundColor: '#c6f6d5',
+                          color: '#22543d',
+                          fontWeight: '600',
+                          fontSize: '0.9rem',
+                          display: 'inline-block'
+                        }}>
+                          ✓ Completed
+                        </span>
+                      ) : (
+                        <span style={{
+                          padding: '8px 16px',
+                          borderRadius: '20px',
+                          backgroundColor: '#bee3f8',
+                          color: '#2c5282',
+                          fontWeight: '600',
+                          fontSize: '0.9rem',
+                          display: 'inline-block'
+                        }}>
+                          ⏳ Upcoming
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Event Details Grid */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: 'var(--space-md)',
+                    marginBottom: 'var(--space-lg)',
+                    padding: 'var(--space-md)',
+                    backgroundColor: '#f7fafc',
+                    borderRadius: '12px'
+                  }}>
+                    <div>
+                      <p style={{ fontSize: '0.85rem', color: '#718096', marginBottom: '4px' }}>📅 Date</p>
+                      <p style={{ fontWeight: '600', color: '#2d3748' }}>
+                        {new Date(event.date).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: '0.85rem', color: '#718096', marginBottom: '4px' }}>🕐 Time</p>
+                      <p style={{ fontWeight: '600', color: '#2d3748' }}>{event.time}</p>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: '0.85rem', color: '#718096', marginBottom: '4px' }}>📍 Venue</p>
+                      <p style={{ fontWeight: '600', color: '#2d3748' }}>{event.venue}</p>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: '0.85rem', color: '#718096', marginBottom: '4px' }}>🎭 Club</p>
+                      <p style={{ fontWeight: '600', color: '#2d3748' }}>{event.club?.name || 'N/A'}</p>
+                    </div>
+                  </div>
+
+                  {/* Reviews & Feedback Section */}
+                  {eventPassed && (
+                    <div style={{ marginTop: 'var(--space-lg)' }}>
+                      {/* Action Buttons Container */}
+                      <div style={{
+                        display: 'flex',
+                        gap: 'var(--space-md)',
+                        flexWrap: 'wrap',
+                        marginBottom: reviewingEventId === event._id || feedbackingEventId === event._id ? 'var(--space-md)' : '0'
+                      }}>
+                        {/* Review Button */}
+                        {!userReviewed && reviewingEventId !== event._id && feedbackingEventId !== event._id && (
+                          <button
+                            onClick={() => setReviewingEventId(event._id)}
+                            className="btn-primary"
+                            style={{
+                              padding: '12px 24px',
+                              borderRadius: '10px',
+                              fontSize: '1rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px'
+                            }}
+                          >
+                            <span>⭐</span> Write a Review
+                          </button>
+                        )}
+
+                        {/* Feedback Button */}
+                        {!event.userHasFeedback && feedbackingEventId !== event._id && reviewingEventId !== event._id && (
+                          <button
+                            onClick={() => setFeedbackingEventId(event._id)}
+                            style={{
+                              padding: '12px 24px',
+                              borderRadius: '10px',
+                              fontSize: '1rem',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
+                              background: 'linear-gradient(135deg, #48bb78, #38a169)',
+                              color: 'white',
+                              border: 'none',
+                              cursor: 'pointer',
+                              fontWeight: '600',
+                              transition: 'all 0.3s ease',
+                              boxShadow: '0 4px 6px rgba(72, 187, 120, 0.3)'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.target.style.transform = 'translateY(-2px)';
+                              e.target.style.boxShadow = '0 6px 12px rgba(72, 187, 120, 0.4)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.target.style.transform = 'translateY(0)';
+                              e.target.style.boxShadow = '0 4px 6px rgba(72, 187, 120, 0.3)';
+                            }}
+                          >
+                            <span>📝</span> Submit Feedback
+                          </button>
+                        )}
+
+                        {/* Show badges if already submitted */}
+                        {userReviewed && reviewingEventId !== event._id && (
+                          <span style={{
+                            padding: '12px 20px',
+                            borderRadius: '10px',
+                            fontSize: '0.95rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            backgroundColor: '#c6f6d5',
+                            color: '#22543d',
+                            fontWeight: '600'
+                          }}>
+                            <span>✓</span> Review Submitted
+                          </span>
+                        )}
+
+                        {event.userHasFeedback && feedbackingEventId !== event._id && (
+                          <span style={{
+                            padding: '12px 20px',
+                            borderRadius: '10px',
+                            fontSize: '0.95rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            backgroundColor: '#c6f6d5',
+                            color: '#22543d',
+                            fontWeight: '600'
+                          }}>
+                            <span>✓</span> Feedback Submitted
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Review Form */}
+                      {reviewingEventId === event._id && (
+                        <ReviewForm
+                          eventId={event._id}
+                          onReviewSubmitted={handleReviewSubmitted}
+                          onCancel={() => setReviewingEventId(null)}
+                        />
+                      )}
+
+                      {/* Feedback Form */}
+                      {feedbackingEventId === event._id && (
+                        <FeedbackForm
+                          eventId={event._id}
+                          onFeedbackSubmitted={handleFeedbackSubmitted}
+                          onCancel={() => setFeedbackingEventId(null)}
+                        />
+                      )}
+
+                      {/* Display Existing Reviews */}
+                      {event.reviews && event.reviews.length > 0 && (
+                        <div style={{ marginTop: 'var(--space-xl)' }}>
+                          <h4 style={{
+                            marginBottom: 'var(--space-lg)',
+                            color: '#2d3748',
+                            fontSize: '1.2rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}>
+                            <span>💬</span> Reviews ({event.reviews.length})
+                          </h4>
+
+                          <div style={{
+                            display: 'grid',
+                            gap: 'var(--space-md)'
+                          }}>
+                            {event.reviews.map((review, index) => (
+                              <div key={index} style={{
+                                padding: 'var(--space-lg)',
+                                backgroundColor: '#f7fafc',
+                                borderRadius: '12px',
+                                border: '1px solid #e2e8f0'
+                              }}>
+                                <div style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  marginBottom: 'var(--space-sm)'
+                                }}>
+                                  <p style={{
+                                    fontWeight: '600',
+                                    color: '#2d3748',
+                                    fontSize: '1rem'
+                                  }}>
+                                    {review.studentName}
+                                  </p>
+                                  <div style={{
+                                    display: 'flex',
+                                    gap: '4px',
+                                    fontSize: '1.1rem'
+                                  }}>
+                                    {[...Array(5)].map((_, i) => (
+                                      <span key={i}>
+                                        {i < review.rating ? '⭐' : '☆'}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                                <p style={{
+                                  color: '#4a5568',
+                                  lineHeight: '1.6',
+                                  marginTop: 'var(--space-sm)'
+                                }}>
+                                  {review.comment}
+                                </p>
+                                <p style={{
+                                  fontSize: '0.85rem',
+                                  color: '#a0aec0',
+                                  marginTop: 'var(--space-sm)'
+                                }}>
+                                  {new Date(review.createdAt).toLocaleDateString()}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

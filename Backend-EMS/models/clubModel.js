@@ -18,11 +18,10 @@ const clubSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  coordinator: {
+  coordinators: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    default: null
-  }
+    ref: 'User'
+  }]
 }, {
   timestamps: true
 });

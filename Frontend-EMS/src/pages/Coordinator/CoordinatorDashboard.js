@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
+import ViewParticipants from './ViewParticipants';
 import { useToast } from '../../components/Toast';
 import api from '../../utils/api';
 
@@ -644,7 +645,8 @@ const CoordinatorDashboard = () => {
   const navItems = [
     { label: 'Home', path: '/coordinator' },
     { label: 'Create Event', path: '/coordinator/create-event' },
-    { label: 'My Events', path: '/coordinator/events' }
+    { label: 'My Events', path: '/coordinator/events' },
+    { label: 'View Participants', path: '/coordinator/participants' }
   ];
 
   return (
@@ -654,6 +656,7 @@ const CoordinatorDashboard = () => {
         <Route path="/" element={<CoordinatorHome />} />
         <Route path="/create-event" element={<CreateEvent />} />
         <Route path="/events" element={<MyEvents />} />
+        <Route path="/participants" element={<ViewParticipants />} />
       </Routes>
     </>
   );

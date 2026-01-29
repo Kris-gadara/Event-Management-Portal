@@ -23,4 +23,7 @@ router.get('/my-events', studentController.getMyRegisteredEvents);
 // Feedback
 router.post('/feedback/:eventId', studentController.submitFeedback);
 
+// Review
+router.post('/review/:eventId', studentController.submitReview);
+
 module.exports = router;

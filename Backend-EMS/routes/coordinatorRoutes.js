@@ -12,6 +12,8 @@ router.use(checkRole('coordinator'));
 // Event management
 router.post('/create-event', coordinatorController.createEvent);
 router.get('/events', coordinatorController.getMyEvents);
+router.get('/event/:eventId/participants', coordinatorController.getEventParticipants);
+router.post('/event/:eventId/attendance', coordinatorController.markAttendance);
 router.put('/event/:id', coordinatorController.updateEvent);
 
 module.exports = router;

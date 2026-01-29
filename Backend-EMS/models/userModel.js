@@ -20,6 +20,11 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'faculty', 'coordinator', 'student'],
     required: true
   },
+  studentId: {
+    type: String,
+    unique: true,
+    sparse: true // Only required for students, allows null for other roles
+  },
   contactNo: {
     type: String
   },

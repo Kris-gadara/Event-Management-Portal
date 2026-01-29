@@ -248,6 +248,23 @@ const ManageClubs = () => {
     }
   };
 
+  const handleRemoveCoordinator = async (clubId, coordinatorId, coordinatorName) => {
+    if (!window.confirm(`Are you sure you want to remove ${coordinatorName} as coordinator?`)) {
+      return;
+    }
+
+    try {
+      await api.post('/faculty/remove-coordinator', {
+        clubId: clubId,
+        coordinatorId: coordinatorId
+      });
+      showSuccess('Coordinator removed successfully! ✅');
+      fetchClubs();
+    } catch (error) {
+      showError(error.response?.data?.message || 'Failed to remove coordinator');
+    }
+  };
+
   if (loading) return (
     <div className="dashboard">
       <div className="section">
@@ -305,7 +322,8 @@ const ManageClubs = () => {
                 <tr>
                   <th>Club Name</th>
                   <th>Description</th>
-                  <th>Coordinator</th>
+                  <th>Coordinators</th>
+                  <th>Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -314,15 +332,62 @@ const ManageClubs = () => {
                     <td><strong>{club.name}</strong></td>
                     <td>{club.description}</td>
                     <td>
-                      {club.coordinator ? (
-                        <span className="badge badge-success">
-                          👤 {club.coordinator.name}
-                        </span>
+                      {club.coordinators && club.coordinators.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
+                          {club.coordinators.map((coordinator) => (
+                            <div key={coordinator._id} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: 'var(--space-sm)',
+                              padding: 'var(--space-sm)',
+                              backgroundColor: 'var(--success-light)',
+                              borderRadius: 'var(--radius-md)',
+                              border: '1px solid var(--success)'
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', flex: 1 }}>
+                                <span style={{ fontSize: '1.2rem' }}>👤</span>
+                                <div>
+                                  <div style={{ fontWeight: '600', color: 'var(--success)' }}>
+                                    {coordinator.name}
+                                  </div>
+                                  <div style={{ fontSize: '0.85rem', color: 'var(--text-light)' }}>
+                                    {coordinator.email}
+                                  </div>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => handleRemoveCoordinator(club._id, coordinator._id, coordinator.name)}
+                                style={{
+                                  backgroundColor: 'var(--danger)',
+                                  color: 'white',
+                                  padding: 'var(--space-xs) var(--space-sm)',
+                                  borderRadius: 'var(--radius-md)',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  fontSize: '0.85rem',
+                                  fontWeight: '500',
+                                  transition: 'all 0.2s ease',
+                                  whiteSpace: 'nowrap'
+                                }}
+                                onMouseOver={(e) => e.target.style.backgroundColor = '#c82333'}
+                                onMouseOut={(e) => e.target.style.backgroundColor = 'var(--danger)'}
+                              >
+                                🗑️ Remove
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       ) : (
                         <span className="badge badge-pending">
-                          Not assigned
+                          No coordinators assigned
                         </span>
                       )}
+                    </td>
+                    <td>
+                      <span style={{ fontSize: '0.9rem', color: 'var(--text-light)' }}>
+                        {club.coordinators?.length || 0} coordinator(s)
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -377,6 +442,22 @@ const VerifyEvents = () => {
       fetchEvents();
     } catch (error) {
       showError('Failed to reject event');
+    }
+  };
+
+  const handleDelete = async (eventId, eventName) => {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete the event "${eventName}"?\n\nThis action cannot be undone and will remove all associated data including:\n- Event details\n- Registered participants\n- Reviews and feedback`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await api.delete(`/faculty/event/${eventId}`);
+      showSuccess('Event deleted successfully! 🗑️');
+      fetchEvents();
+    } catch (error) {
+      showError(error.response?.data?.message || 'Failed to delete event');
     }
   };
 
@@ -467,8 +548,9 @@ const VerifyEvents = () => {
                   <th>Event Name</th>
                   <th>Date</th>
                   <th>Venue</th>
-                  <th>Created By</th>
                   <th>Status</th>
+                  <th>Report</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -477,8 +559,87 @@ const VerifyEvents = () => {
                     <td><strong>{event.name}</strong></td>
                     <td>📅 {new Date(event.date).toLocaleDateString()}</td>
                     <td>📍 {event.venue}</td>
-                    <td>👤 {event.createdBy?.name}</td>
                     <td><span className="badge-success">✓ Approved</span></td>
+                    <td>
+                      <button
+                        onClick={async () => {
+                          try {
+                            showSuccess('Generating report...');
+                            // Download file using axios with authentication
+                            const response = await api.get(`/faculty/event/${event._id}/report`, {
+                              responseType: 'blob' // Important for downloading files
+                            });
+
+                            // Create blob link to download
+                            const url = window.URL.createObjectURL(new Blob([response.data]));
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.setAttribute('download', `${event.name.replace(/[^a-z0-9]/gi, '_')}_Attendance_Report.xlsx`);
+                            document.body.appendChild(link);
+                            link.click();
+                            link.remove();
+                            window.URL.revokeObjectURL(url);
+
+                            showSuccess('Report downloaded successfully! 📊');
+                          } catch (error) {
+                            console.error('Download error:', error);
+                            showError('Failed to download report');
+                          }
+                        }}
+                        style={{
+                          fontSize: '0.85rem',
+                          padding: 'var(--space-sm) var(--space-md)',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: 'linear-gradient(135deg, #4299e1, #3182ce)',
+                          color: 'white',
+                          cursor: 'pointer',
+                          fontWeight: '600',
+                          transition: 'all 0.3s ease',
+                          boxShadow: '0 2px 4px rgba(66, 153, 225, 0.3)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = 'translateY(-2px)';
+                          e.target.style.boxShadow = '0 4px 8px rgba(66, 153, 225, 0.4)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = 'translateY(0)';
+                          e.target.style.boxShadow = '0 2px 4px rgba(66, 153, 225, 0.3)';
+                        }}
+                      >
+                        📊 View Report
+                      </button>
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => handleDelete(event._id, event.name)}
+                        style={{
+                          fontSize: '0.85rem',
+                          padding: 'var(--space-sm) var(--space-md)',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: 'linear-gradient(135deg, #e53e3e, #c53030)',
+                          color: 'white',
+                          cursor: 'pointer',
+                          fontWeight: '600',
+                          transition: 'all 0.3s ease',
+                          boxShadow: '0 2px 4px rgba(229, 62, 62, 0.3)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.transform = 'translateY(-2px)';
+                          e.target.style.boxShadow = '0 4px 8px rgba(229, 62, 62, 0.4)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.transform = 'translateY(0)';
+                          e.target.style.boxShadow = '0 2px 4px rgba(229, 62, 62, 0.3)';
+                        }}
+                      >
+                        🗑️ Delete
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -495,7 +656,7 @@ const FacultyDashboard = () => {
     { label: 'Home', path: '/faculty' },
     { label: 'Create Club', path: '/faculty/create-club' },
     { label: 'Manage Clubs', path: '/faculty/clubs' },
-    { label: 'Verify Events', path: '/faculty/events' }
+    { label: 'Events Details', path: '/faculty/events' }
   ];
 
   return (

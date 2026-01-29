@@ -10,6 +10,7 @@ const StudentRegister = () => {
     email: '',
     password: '',
     department: '',
+    studentId: '',
     image: ''
   });
   const [imageFile, setImageFile] = useState(null);
@@ -125,6 +126,17 @@ const StudentRegister = () => {
               name="name"
               value={formData.name}
               onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Student ID</label>
+            <input
+              type="text"
+              name="studentId"
+              value={formData.studentId}
+              onChange={handleChange}
+              placeholder="e.g., 23DITXX"
               required
             />
           </div>

@@ -22,5 +22,7 @@ router.get('/students', facultyController.getAllStudents);
 router.get('/events/pending', facultyController.getPendingEvents);
 router.get('/events/approved', facultyController.getApprovedEvents);
 router.put('/verify-event/:id', facultyController.verifyEvent);
+router.delete('/event/:id', facultyController.deleteEvent);
+router.get('/event/:id/report', facultyController.downloadEventReport);
 
 module.exports = router;
