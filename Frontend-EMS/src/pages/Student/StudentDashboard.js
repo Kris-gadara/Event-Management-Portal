@@ -606,9 +606,22 @@ const ViewClubs = () => {
                 borderRadius: 'var(--radius-sm)',
                 marginTop: 'auto'
               }}>
-                <p style={{ margin: 0, fontSize: '0.9rem' }}>
-                  <strong>👤 Coordinator:</strong> {club.coordinator?.name || 'Not assigned'}
+                <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: '600', marginBottom: 'var(--space-xs)' }}>
+                  👥 Coordinators:
                 </p>
+                {club.coordinators && club.coordinators.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
+                    {club.coordinators.map((coordinator, index) => (
+                      <p key={coordinator._id || index} style={{ margin: 0, fontSize: '0.85rem', paddingLeft: 'var(--space-sm)' }}>
+                        • {coordinator.name}
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-light)', paddingLeft: 'var(--space-sm)' }}>
+                    No coordinators assigned
+                  </p>
+                )}
               </div>
             </div>
           ))

@@ -84,26 +84,44 @@ const CreateEvent = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const processImageFile = (file, setFile, setPreview, imageName) => {
+    if (file.size > 5 * 1024 * 1024) {
+      showError(`${imageName} size should be less than 5MB`);
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      showError(`Please select a valid image file for ${imageName}`);
+      return;
+    }
+
+    setFile(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleImageChange = (e, setFile, setPreview, imageName) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        showError(`${imageName} size should be less than 5MB`);
-        return;
-      }
+      processImageFile(file, setFile, setPreview, imageName);
+    }
+  };
 
-      if (!file.type.startsWith('image/')) {
-        showError(`Please select a valid image file for ${imageName}`);
-        return;
-      }
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
-      setFile(file);
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+  const handleDrop = (e, setFile, setPreview, imageName) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      processImageFile(file, setFile, setPreview, imageName);
     }
   };
 
@@ -307,26 +325,48 @@ const CreateEvent = () => {
           <div className="form-group">
             <label style={{
               fontWeight: '600',
-              color: 'var(--primary-gradient-start)',
+              color: '#1e40af',
               display: 'flex',
               alignItems: 'center',
               gap: 'var(--space-xs)'
             }}>
               🖼️ Primary Image (Required - for Event Card)
             </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleImageChange(e, setPrimaryImageFile, setPrimaryImagePreview, 'Primary Image')}
+            <div
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, setPrimaryImageFile, setPrimaryImagePreview, 'Primary Image')}
               style={{
-                padding: 'var(--space-sm)',
-                border: '2px solid var(--primary-gradient-start)',
+                padding: 'var(--space-xl)',
+                border: '2px dashed #1e40af',
                 borderRadius: '12px',
-                backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                cursor: 'pointer'
+                backgroundColor: '#f0f9ff',
+                cursor: 'pointer',
+                textAlign: 'center',
+                transition: 'all 0.3s ease'
               }}
-              required
-            />
+            >
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleImageChange(e, setPrimaryImageFile, setPrimaryImagePreview, 'Primary Image')}
+                id="primary-image-input"
+                style={{ display: 'none' }}
+                required
+              />
+              <label
+                htmlFor="primary-image-input"
+                style={{
+                  cursor: 'pointer',
+                  display: 'block',
+                  color: '#1e40af',
+                  fontWeight: '500'
+                }}
+              >
+                <div style={{ fontSize: '2rem', marginBottom: 'var(--space-sm)' }}>📁</div>
+                <div>Click to select or drag and drop primary image</div>
+                <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: 'var(--space-xs)' }}>Max size: 5MB</div>
+              </label>
+            </div>
             {primaryImagePreview && (
               <div style={{ marginTop: 'var(--space-md)', textAlign: 'center' }}>
                 <img
@@ -365,30 +405,49 @@ const CreateEvent = () => {
               color: 'var(--text-secondary)',
               marginBottom: 'var(--space-md)'
             }}>
-              Upload up to 3 additional images to display in the event detail page
+              Upload up to 2 additional images to display in the event detail page
             </p>
 
             {/* Additional Image 1 */}
-            <div style={{ marginBottom: 'var(--space-lg)', padding: 'var(--space-md)', backgroundColor: 'rgba(118, 75, 162, 0.03)', borderRadius: '12px' }}>
-              <label style={{ fontSize: '0.95rem', color: 'var(--secondary-gradient-start)', marginBottom: 'var(--space-sm)', display: 'block', fontWeight: '600' }}>
+            <div style={{ marginBottom: 'var(--space-lg)', padding: 'var(--space-md)', backgroundColor: '#f0f9ff', borderRadius: '12px' }}>
+              <label style={{ fontSize: '0.95rem', color: '#3b82f6', marginBottom: 'var(--space-sm)', display: 'block', fontWeight: '600' }}>
                 📸 Image & Description Set 1
               </label>
-              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-xs)', display: 'block' }}>
+              <label style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: 'var(--space-xs)', display: 'block' }}>
                 Image 1
               </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleImageChange(e, setAdditionalImage1File, setAdditionalImage1Preview, 'Additional Image 1')}
+              <div
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, setAdditionalImage1File, setAdditionalImage1Preview, 'Additional Image 1')}
                 style={{
-                  padding: 'var(--space-sm)',
-                  border: '2px dashed var(--secondary-gradient-start)',
+                  padding: 'var(--space-lg)',
+                  border: '2px dashed #3b82f6',
                   borderRadius: '12px',
-                  backgroundColor: 'rgba(118, 75, 162, 0.05)',
+                  backgroundColor: '#ffffff',
                   cursor: 'pointer',
-                  width: '100%'
+                  textAlign: 'center'
                 }}
-              />
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageChange(e, setAdditionalImage1File, setAdditionalImage1Preview, 'Additional Image 1')}
+                  id="additional-image-1-input"
+                  style={{ display: 'none' }}
+                />
+                <label
+                  htmlFor="additional-image-1-input"
+                  style={{
+                    cursor: 'pointer',
+                    display: 'block',
+                    color: '#3b82f6',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  <div style={{ fontSize: '1.5rem', marginBottom: 'var(--space-xs)' }}>📁</div>
+                  <div>Click or drag image here</div>
+                </label>
+              </div>
               {additionalImage1Preview && (
                 <div style={{ marginTop: 'var(--space-sm)' }}>
                   <img
@@ -426,26 +485,45 @@ const CreateEvent = () => {
             </div>
 
             {/* Additional Image 2 */}
-            <div style={{ marginBottom: 'var(--space-lg)', padding: 'var(--space-md)', backgroundColor: 'rgba(118, 75, 162, 0.03)', borderRadius: '12px' }}>
-              <label style={{ fontSize: '0.95rem', color: 'var(--secondary-gradient-start)', marginBottom: 'var(--space-sm)', display: 'block', fontWeight: '600' }}>
+            <div style={{ marginBottom: 'var(--space-lg)', padding: 'var(--space-md)', backgroundColor: '#f0f9ff', borderRadius: '12px' }}>
+              <label style={{ fontSize: '0.95rem', color: '#3b82f6', marginBottom: 'var(--space-sm)', display: 'block', fontWeight: '600' }}>
                 📸 Image & Description Set 2
               </label>
-              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-xs)', display: 'block' }}>
+              <label style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: 'var(--space-xs)', display: 'block' }}>
                 Image 2
               </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleImageChange(e, setAdditionalImage2File, setAdditionalImage2Preview, 'Additional Image 2')}
+              <div
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, setAdditionalImage2File, setAdditionalImage2Preview, 'Additional Image 2')}
                 style={{
-                  padding: 'var(--space-sm)',
-                  border: '2px dashed var(--secondary-gradient-start)',
+                  padding: 'var(--space-lg)',
+                  border: '2px dashed #3b82f6',
                   borderRadius: '12px',
-                  backgroundColor: 'rgba(118, 75, 162, 0.05)',
+                  backgroundColor: '#ffffff',
                   cursor: 'pointer',
-                  width: '100%'
+                  textAlign: 'center'
                 }}
-              />
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageChange(e, setAdditionalImage2File, setAdditionalImage2Preview, 'Additional Image 2')}
+                  id="additional-image-2-input"
+                  style={{ display: 'none' }}
+                />
+                <label
+                  htmlFor="additional-image-2-input"
+                  style={{
+                    cursor: 'pointer',
+                    display: 'block',
+                    color: '#3b82f6',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  <div style={{ fontSize: '1.5rem', marginBottom: 'var(--space-xs)' }}>📁</div>
+                  <div>Click or drag image here</div>
+                </label>
+              </div>
               {additionalImage2Preview && (
                 <div style={{ marginTop: 'var(--space-sm)' }}>
                   <img
@@ -468,63 +546,6 @@ const CreateEvent = () => {
                 value={additionalDesc2}
                 onChange={(e) => setAdditionalDesc2(e.target.value)}
                 placeholder="Enter description for this section (e.g., benefits, requirements, what to expect, etc.)"
-                rows="4"
-                style={{
-                  width: '100%',
-                  padding: 'var(--space-sm)',
-                  border: '2px dashed var(--secondary-gradient-start)',
-                  borderRadius: '12px',
-                  backgroundColor: 'rgba(118, 75, 162, 0.05)',
-                  fontSize: '0.95rem',
-                  fontFamily: 'inherit',
-                  resize: 'vertical'
-                }}
-              />
-            </div>
-
-            {/* Additional Image 3 */}
-            <div style={{ marginBottom: 'var(--space-lg)', padding: 'var(--space-md)', backgroundColor: 'rgba(118, 75, 162, 0.03)', borderRadius: '12px' }}>
-              <label style={{ fontSize: '0.95rem', color: 'var(--secondary-gradient-start)', marginBottom: 'var(--space-sm)', display: 'block', fontWeight: '600' }}>
-                📸 Image & Description Set 3
-              </label>
-              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 'var(--space-xs)', display: 'block' }}>
-                Image 3
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleImageChange(e, setAdditionalImage3File, setAdditionalImage3Preview, 'Additional Image 3')}
-                style={{
-                  padding: 'var(--space-sm)',
-                  border: '2px dashed var(--secondary-gradient-start)',
-                  borderRadius: '12px',
-                  backgroundColor: 'rgba(118, 75, 162, 0.05)',
-                  cursor: 'pointer',
-                  width: '100%'
-                }}
-              />
-              {additionalImage3Preview && (
-                <div style={{ marginTop: 'var(--space-sm)' }}>
-                  <img
-                    src={additionalImage3Preview}
-                    alt="Additional 3 Preview"
-                    style={{
-                      maxWidth: '100%',
-                      maxHeight: '200px',
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-                    }}
-                  />
-                </div>
-              )}
-
-              <label style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 'var(--space-md)', marginBottom: 'var(--space-xs)', display: 'block' }}>
-                Description 3 (appears opposite to Image 3 on detail page)
-              </label>
-              <textarea
-                value={additionalDesc3}
-                onChange={(e) => setAdditionalDesc3(e.target.value)}
-                placeholder="Enter description for this section (e.g., special highlights, prizes, refreshments, etc.)"
                 rows="4"
                 style={{
                   width: '100%',

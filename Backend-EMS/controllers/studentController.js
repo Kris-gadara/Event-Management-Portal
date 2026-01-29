@@ -69,7 +69,7 @@ exports.getPublishedEvents = async (req, res) => {
 exports.getAllClubs = async (req, res) => {
   try {
     const clubs = await Club.find()
-      .populate('coordinator', 'name email')
+      .populate('coordinators', 'name email')
       .populate('createdBy', 'name');
     res.json(clubs);
   } catch (error) {

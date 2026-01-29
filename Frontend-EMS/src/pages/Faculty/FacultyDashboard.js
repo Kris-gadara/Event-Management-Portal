@@ -50,26 +50,44 @@ const CreateClub = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const processFile = (file) => {
+    if (file.size > 5 * 1024 * 1024) {
+      showError('Image size should be less than 5MB');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      showError('Please select a valid image file');
+      return;
+    }
+
+    setImageFile(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        showError('Image size should be less than 5MB');
-        return;
-      }
+      processFile(file);
+    }
+  };
 
-      if (!file.type.startsWith('image/')) {
-        showError('Please select a valid image file');
-        return;
-      }
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
-      setImageFile(file);
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      processFile(file);
     }
   };
 
@@ -152,18 +170,40 @@ const CreateClub = () => {
           </div>
           <div className="form-group">
             <label>Club Image (optional)</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
+            <div
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
               style={{
-                padding: 'var(--space-sm)',
-                border: '2px dashed var(--primary-gradient-start)',
+                padding: 'var(--space-xl)',
+                border: '2px dashed #1e40af',
                 borderRadius: '12px',
-                backgroundColor: 'rgba(102, 126, 234, 0.05)',
-                cursor: 'pointer'
+                backgroundColor: '#f0f9ff',
+                cursor: 'pointer',
+                textAlign: 'center',
+                transition: 'all 0.3s ease'
               }}
-            />
+            >
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                id="club-image-input"
+                style={{ display: 'none' }}
+              />
+              <label
+                htmlFor="club-image-input"
+                style={{
+                  cursor: 'pointer',
+                  display: 'block',
+                  color: '#1e40af',
+                  fontWeight: '500'
+                }}
+              >
+                <div style={{ fontSize: '2rem', marginBottom: 'var(--space-sm)' }}>📁</div>
+                <div>Click to select or drag and drop an image here</div>
+                <div style={{ fontSize: '0.85rem', color: '#64748b', marginTop: 'var(--space-xs)' }}>Max size: 5MB</div>
+              </label>
+            </div>
             {imagePreview && (
               <div style={{ marginTop: 'var(--space-md)', textAlign: 'center' }}>
                 <img
