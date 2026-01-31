@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useToast } from './Toast';
 import api from '../utils/api';
+import { MessageSquare, Star, Loader2, Send, X } from 'lucide-react';
 
 const FeedbackForm = ({ eventId, onFeedbackSubmitted, onCancel }) => {
   const [rating, setRating] = useState(0);
@@ -29,7 +30,7 @@ const FeedbackForm = ({ eventId, onFeedbackSubmitted, onCancel }) => {
         comment
       });
 
-      showSuccess(response.data.message || 'Feedback submitted successfully! 📝');
+      showSuccess(response.data.message || 'Feedback submitted successfully!');
       onFeedbackSubmitted();
       setRating(0);
       setComment('');
@@ -40,145 +41,268 @@ const FeedbackForm = ({ eventId, onFeedbackSubmitted, onCancel }) => {
     }
   };
 
+  const getRatingText = () => {
+    switch (rating) {
+      case 1: return 'Poor';
+      case 2: return 'Fair';
+      case 3: return 'Good';
+      case 4: return 'Very Good';
+      case 5: return 'Excellent';
+      default: return 'Select a rating';
+    }
+  };
+
+  const styles = `
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap');
+    
+    .feedback-form {
+      background: white;
+      padding: 28px;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(30, 64, 175, 0.08);
+      margin-top: 20px;
+    }
+    
+    .feedback-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .feedback-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .feedback-header h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0;
+    }
+    
+    .rating-section {
+      margin-bottom: 24px;
+    }
+    
+    .rating-label {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      color: #1e293b;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+    
+    .stars-container {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .star-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      transition: all 0.2s ease;
+    }
+    
+    .star-btn:hover {
+      transform: scale(1.15);
+    }
+    
+    .star-btn svg {
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    }
+    
+    .rating-text {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      color: #64748b;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .rating-text .stars {
+      color: #f59e0b;
+    }
+    
+    .comment-section {
+      margin-bottom: 24px;
+    }
+    
+    .comment-textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      resize: vertical;
+      transition: all 0.3s ease;
+      outline: none;
+      box-sizing: border-box;
+    }
+    
+    .comment-textarea:focus {
+      border-color: #0ea5e9;
+      box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+    
+    .btn-cancel {
+      padding: 12px 24px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+      background: white;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-cancel:hover {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+    
+    .btn-submit {
+      padding: 12px 24px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(30, 64, 175, 0.35);
+    }
+    
+    .btn-submit:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .spin {
+      animation: spin 1s linear infinite;
+    }
+  `;
+
   return (
-    <div style={{
-      backgroundColor: 'white',
-      padding: 'var(--space-xl)',
-      borderRadius: '16px',
-      boxShadow: '0 4px 6px rgba(0,0,0,0.07)',
-      border: '1px solid #e2e8f0',
-      marginTop: 'var(--space-lg)'
-    }}>
-      <h3 style={{
-        marginBottom: 'var(--space-lg)',
-        fontSize: '1.3rem',
-        color: '#2d3748',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px'
-      }}>
-        <span>📝</span> Submit Your Feedback
-      </h3>
-
-      <form onSubmit={handleSubmit}>
-        {/* Star Rating */}
-        <div style={{ marginBottom: 'var(--space-xl)' }}>
-          <label style={{
-            display: 'block',
-            marginBottom: 'var(--space-md)',
-            fontWeight: '600',
-            color: '#4a5568',
-            fontSize: '1rem'
-          }}>
-            Rating
-          </label>
-          <div style={{
-            display: 'flex',
-            gap: '8px',
-            fontSize: '2.5rem'
-          }}>
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                type="button"
-                onClick={() => setRating(star)}
-                onMouseEnter={() => setHoveredRating(star)}
-                onMouseLeave={() => setHoveredRating(0)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '2.5rem',
-                  transition: 'all 0.2s ease',
-                  transform: (hoveredRating >= star || rating >= star) ? 'scale(1.1)' : 'scale(1)',
-                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-                }}
-              >
-                {(hoveredRating >= star || rating >= star) ? '⭐' : '☆'}
-              </button>
-            ))}
+    <>
+      <style>{styles}</style>
+      <div className="feedback-form">
+        <div className="feedback-header">
+          <div className="feedback-icon">
+            <MessageSquare size={24} color="white" />
           </div>
-          <p style={{
-            marginTop: 'var(--space-sm)',
-            fontSize: '0.9rem',
-            color: '#718096'
-          }}>
-            {rating === 0 ? 'Select a rating' :
-              rating === 1 ? '⭐ Poor' :
-                rating === 2 ? '⭐⭐ Fair' :
-                  rating === 3 ? '⭐⭐⭐ Good' :
-                    rating === 4 ? '⭐⭐⭐⭐ Very Good' :
-                      '⭐⭐⭐⭐⭐ Excellent'}
-          </p>
+          <h3>Submit Your Feedback</h3>
         </div>
 
-        {/* Feedback Comment */}
-        <div style={{ marginBottom: 'var(--space-xl)' }}>
-          <label style={{
-            display: 'block',
-            marginBottom: 'var(--space-md)',
-            fontWeight: '600',
-            color: '#4a5568',
-            fontSize: '1rem'
-          }}>
-            Your Feedback
-          </label>
-          <textarea
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            placeholder="Share your experience and suggestions for improvement..."
-            required
-            style={{
-              width: '100%',
-              minHeight: '120px',
-              padding: 'var(--space-md)',
-              border: '2px solid #e2e8f0',
-              borderRadius: '12px',
-              fontSize: '1rem',
-              fontFamily: 'inherit',
-              resize: 'vertical',
-              transition: 'border-color 0.2s ease',
-              outline: 'none'
-            }}
-            onFocus={(e) => e.target.style.borderColor = 'var(--primary-gradient-start)'}
-            onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-          />
-        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="rating-section">
+            <label className="rating-label">Rating</label>
+            <div className="stars-container">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  className="star-btn"
+                  onClick={() => setRating(star)}
+                  onMouseEnter={() => setHoveredRating(star)}
+                  onMouseLeave={() => setHoveredRating(0)}
+                >
+                  <Star
+                    size={32}
+                    fill={(hoveredRating >= star || rating >= star) ? '#f59e0b' : 'none'}
+                    color={(hoveredRating >= star || rating >= star) ? '#f59e0b' : '#cbd5e1'}
+                    strokeWidth={2}
+                  />
+                </button>
+              ))}
+            </div>
+            <p className="rating-text">
+              {rating > 0 && <span className="stars">{'★'.repeat(rating)}</span>}
+              {getRatingText()}
+            </p>
+          </div>
 
-        {/* Buttons */}
-        <div style={{
-          display: 'flex',
-          gap: 'var(--space-md)',
-          justifyContent: 'flex-end'
-        }}>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="btn-secondary"
-            disabled={loading}
-            style={{
-              padding: '12px 24px',
-              borderRadius: '10px'
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="btn-primary"
-            disabled={loading}
-            style={{
-              padding: '12px 24px',
-              borderRadius: '10px',
-              background: loading ? '#a0aec0' : 'var(--primary-gradient)',
-              cursor: loading ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {loading ? '⏳ Submitting...' : '✓ Submit Feedback'}
-          </button>
-        </div>
-      </form>
-    </div>
+          <div className="comment-section">
+            <label className="rating-label">Your Feedback</label>
+            <textarea
+              className="comment-textarea"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Share your experience and suggestions for improvement..."
+              required
+            />
+          </div>
+
+          <div className="button-group">
+            <button
+              type="button"
+              className="btn-cancel"
+              onClick={onCancel}
+              disabled={loading}
+            >
+              <X size={18} />
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn-submit"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 size={18} className="spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Send size={18} />
+                  Submit Feedback
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </>
   );
 };
 

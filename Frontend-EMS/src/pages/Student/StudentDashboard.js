@@ -7,38 +7,168 @@ import ReviewForm from '../../components/ReviewForm';
 import FeedbackForm from '../../components/FeedbackForm';
 import { useToast } from '../../components/Toast';
 import api from '../../utils/api';
+import { GraduationCap, Calendar, ClipboardList, Users, PartyPopper, Loader2, MailX, Star, MessageSquare, Clock, MapPin, CheckCircle2, Send, Sparkles } from 'lucide-react';
 
 const StudentHome = () => {
   return (
-    <div className="dashboard">
-      <h2>Student Dashboard</h2>
-      <div className="section">
-        <h3>Welcome, Student! 🎓</h3>
-        <p style={{ fontSize: '1.1rem', lineHeight: '1.8', color: 'var(--text-light)' }}>
-          Browse exciting events, register for activities, and explore amazing clubs on campus.
-          Make the most of your college experience!
-        </p>
-        <div className="card-grid" style={{ marginTop: 'var(--space-xl)' }}>
-          <div className="card" style={{ textAlign: 'center' }}>
-            <h3 style={{ fontSize: '2.5rem', marginBottom: 'var(--space-sm)' }}>🎉</h3>
-            <h4>Upcoming Events</h4>
-            <p>Discover and register for exciting campus events</p>
+    <div className="student-dashboard">
+      <div className="dashboard-container">
+        <div className="welcome-section">
+          <div className="welcome-icon">
+            <GraduationCap size={32} />
           </div>
-          <div className="card" style={{ textAlign: 'center' }}>
-            <h3 style={{ fontSize: '2.5rem', marginBottom: 'var(--space-sm)' }}>📋</h3>
-            <h4>My Registrations</h4>
-            <p>Track all your registered events</p>
+          <h1>Student Dashboard</h1>
+          <p>Browse exciting events, register for activities, and explore amazing clubs on campus. Make the most of your college experience!</p>
+        </div>
+        
+        <div className="quick-stats">
+          <div className="stat-card">
+            <div className="stat-icon purple">
+              <PartyPopper size={24} />
+            </div>
+            <div className="stat-content">
+              <h3>Upcoming Events</h3>
+              <p>Discover and register for exciting campus events</p>
+            </div>
           </div>
-          <div className="card" style={{ textAlign: 'center' }}>
-            <h3 style={{ fontSize: '2.5rem', marginBottom: 'var(--space-sm)' }}>🎭</h3>
-            <h4>Explore Clubs</h4>
-            <p>Join vibrant student communities</p>
+          <div className="stat-card">
+            <div className="stat-icon blue">
+              <ClipboardList size={24} />
+            </div>
+            <div className="stat-content">
+              <h3>My Registrations</h3>
+              <p>Track all your registered events</p>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-icon cyan">
+              <Users size={24} />
+            </div>
+            <div className="stat-content">
+              <h3>Explore Clubs</h3>
+              <p>Join vibrant student communities</p>
+            </div>
           </div>
         </div>
       </div>
+      
+      <style>{studentHomeStyles}</style>
     </div>
   );
 };
+
+const studentHomeStyles = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+  
+  .student-dashboard {
+    min-height: calc(100vh - 70px);
+    background: linear-gradient(135deg, #f0f9ff 0%, #f8fafc 50%, #f0fdf4 100%);
+    padding: 40px 24px;
+    font-family: 'DM Sans', -apple-system, sans-serif;
+  }
+  
+  .dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .welcome-section {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  
+  .welcome-icon {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin: 0 auto 24px;
+    box-shadow: 0 8px 24px rgba(30, 64, 175, 0.25);
+  }
+  
+  .welcome-section h1 {
+    font-size: 36px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 12px;
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  .welcome-section p {
+    font-size: 17px;
+    color: #64748b;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+  
+  .quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+  }
+  
+  .stat-card {
+    background: white;
+    border-radius: 20px;
+    padding: 28px;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(30, 64, 175, 0.12);
+  }
+  
+  .stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  
+  .stat-icon.purple {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+    color: white;
+  }
+  
+  .stat-icon.blue {
+    background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+    color: white;
+  }
+  
+  .stat-icon.cyan {
+    background: linear-gradient(135deg, #0891b2 0%, #14b8a6 100%);
+    color: white;
+  }
+  
+  .stat-content h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 6px;
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  .stat-content p {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.5;
+    margin: 0;
+  }
+`;
 
 const ViewEvents = () => {
   const [events, setEvents] = useState([]);
@@ -75,7 +205,7 @@ const ViewEvents = () => {
   const handleRegister = async (eventId) => {
     try {
       const response = await api.post(`/student/register-event/${eventId}`);
-      showSuccess(response.data.message || 'Successfully registered for event! 🎉');
+      showSuccess(response.data.message || 'Successfully registered for event!');
       fetchMyEvents();
     } catch (error) {
       showError(error.response?.data?.message || 'Failed to register for event');
@@ -89,80 +219,41 @@ const ViewEvents = () => {
   const isRegistered = (eventId) => registeredEvents.includes(eventId);
 
   if (loading) return (
-    <div className="dashboard">
-      <div className="section" style={{
-        minHeight: '60vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', marginBottom: 'var(--space-md)' }}>⏳</div>
-          <h2>Loading events...</h2>
+    <div className="student-dashboard">
+      <div className="loading-state">
+        <div className="loading-icon">
+          <Loader2 size={32} className="spin" />
         </div>
+        <h2>Loading events...</h2>
       </div>
+      <style>{viewEventsStyles}</style>
     </div>
   );
 
   return (
-    <div className="dashboard">
-      <div className="section">
-        <h2 style={{
-          fontSize: '2.5rem',
-          background: 'linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end))',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          marginBottom: 'var(--space-lg)',
-          textAlign: 'center'
-        }}>
-          🎉 Available Events
-        </h2>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          marginBottom: 'var(--space-xxl)'
-        }}>
-          <div style={{
-            display: 'inline-block',
-            padding: '14px 28px',
-            borderRadius: '30px',
-            marginBottom: "50px",
-            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.12), rgba(118, 75, 162, 0.12))',
-            border: '2px solid var(--primary-gradient-start)',
-            boxShadow: '0 2px 8px rgba(102, 126, 234, 0.15)'
-          }}>
-            <p style={{
-              fontSize: '1.05rem',
-              fontWeight: '600',
-              color: 'var(--primary-gradient-start)',
-              margin: 0,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              <span>✨</span>
-              <span>Discover exciting campus events and register to participate</span>
-            </p>
+    <div className="student-dashboard">
+      <div className="dashboard-container">
+        <div className="page-header">
+          <div className="header-icon">
+            <PartyPopper size={28} />
+          </div>
+          <h1>Available Events</h1>
+          <div className="header-badge">
+            <Sparkles size={16} />
+            <span>Discover exciting campus events and register to participate</span>
           </div>
         </div>
-
+        
         {events.length === 0 ? (
-          <div className="card" style={{
-            textAlign: 'center',
-            padding: 'var(--space-xxl)'
-          }}>
-            <div style={{ fontSize: '4rem', marginBottom: 'var(--space-md)' }}>📭</div>
-            <h3 style={{ marginBottom: 'var(--space-sm)' }}>No Events Available</h3>
-            <p style={{ color: 'var(--text-secondary)' }}>
-              Check back soon for exciting upcoming events!
-            </p>
+          <div className="empty-state">
+            <div className="empty-icon">
+              <MailX size={48} />
+            </div>
+            <h3>No Events Available</h3>
+            <p>Check back soon for exciting upcoming events!</p>
           </div>
         ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-            gap: 'var(--space-xl)'
-          }}>
+          <div className="events-grid">
             {events.map((event) => (
               <EventCard
                 key={event._id}
@@ -175,9 +266,143 @@ const ViewEvents = () => {
           </div>
         )}
       </div>
+      
+      <style>{viewEventsStyles}</style>
     </div>
   );
 };
+
+const viewEventsStyles = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+  
+  .student-dashboard {
+    min-height: calc(100vh - 70px);
+    background: linear-gradient(135deg, #f0f9ff 0%, #f8fafc 50%, #f0fdf4 100%);
+    padding: 40px 24px;
+    font-family: 'DM Sans', -apple-system, sans-serif;
+  }
+  
+  .dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+  }
+  
+  .loading-icon {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-bottom: 20px;
+  }
+  
+  .loading-state h2 {
+    font-size: 20px;
+    color: #64748b;
+    font-weight: 600;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  .spin {
+    animation: spin 1s linear infinite;
+  }
+  
+  .page-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  
+  .header-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 24px rgba(30, 64, 175, 0.25);
+  }
+  
+  .page-header h1 {
+    font-size: 36px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 16px;
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: white;
+    border-radius: 50px;
+    border: 2px solid #bae6fd;
+    color: #0369a1;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(30, 64, 175, 0.1);
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 80px 24px;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  }
+  
+  .empty-icon {
+    width: 96px;
+    height: 96px;
+    background: #f0f9ff;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0ea5e9;
+    margin: 0 auto 24px;
+  }
+  
+  .empty-state h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  .empty-state p {
+    font-size: 16px;
+    color: #64748b;
+  }
+  
+  .events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 28px;
+  }
+`;
 
 const MyEvents = () => {
   const [events, setEvents] = useState([]);
@@ -212,229 +437,135 @@ const MyEvents = () => {
 
   const handleReviewSubmitted = () => {
     setReviewingEventId(null);
-    fetchMyEvents(); // Refresh events to show new review
+    fetchMyEvents();
   };
 
   const handleFeedbackSubmitted = () => {
     setFeedbackingEventId(null);
-    fetchMyEvents(); // Refresh events
+    fetchMyEvents();
   };
 
   if (loading) return (
-    <div className="dashboard">
-      <div className="section">
+    <div className="student-dashboard">
+      <div className="loading-state">
+        <div className="loading-icon">
+          <Loader2 size={32} className="spin" />
+        </div>
         <h2>Loading your events...</h2>
       </div>
+      <style>{myEventsStyles}</style>
     </div>
   );
 
   return (
-    <div className="dashboard">
-      <h2>My Registered Events 📋</h2>
-      <div className="section">
+    <div className="student-dashboard">
+      <div className="dashboard-container">
+        <div className="page-header">
+          <div className="header-icon">
+            <ClipboardList size={28} />
+          </div>
+          <h1>My Registered Events</h1>
+        </div>
+        
         {events.length === 0 ? (
-          <div className="card" style={{ textAlign: 'center', padding: 'var(--space-2xl)' }}>
-            <h3 style={{ fontSize: '3rem', marginBottom: 'var(--space-md)' }}>📭</h3>
-            <p style={{ fontSize: '1.2rem', color: 'var(--text-light)' }}>
-              You haven't registered for any events yet.
-            </p>
-            <p style={{ marginTop: 'var(--space-sm)', color: 'var(--text-light)' }}>
-              Check out the available events and register now!
-            </p>
+          <div className="empty-state">
+            <div className="empty-icon">
+              <MailX size={48} />
+            </div>
+            <h3>No Registered Events</h3>
+            <p>You haven't registered for any events yet. Check out the available events and register now!</p>
           </div>
         ) : (
-          <div style={{
-            display: 'grid',
-            gap: 'var(--space-xl)'
-          }}>
+          <div className="my-events-list">
             {events.map((event) => {
               const eventPassed = isPastEvent(event.date);
               const userReviewed = hasUserReviewed(event, localStorage.getItem('userId'));
 
               return (
-                <div key={event._id} className="card" style={{
-                  padding: 'var(--space-xl)',
-                  border: eventPassed ? '2px solid #48bb78' : '2px solid var(--primary-gradient-start)'
-                }}>
-                  {/* Event Header */}
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    marginBottom: 'var(--space-lg)',
-                    flexWrap: 'wrap',
-                    gap: 'var(--space-md)'
-                  }}>
-                    <div style={{ flex: '1', minWidth: '250px' }}>
-                      <h3 style={{
-                        fontSize: '1.5rem',
-                        marginBottom: 'var(--space-sm)',
-                        color: '#2d3748'
-                      }}>
-                        {event.name}
-                      </h3>
-                      <p style={{
-                        color: '#718096',
-                        lineHeight: '1.6',
-                        marginBottom: 'var(--space-md)'
-                      }}>
-                        {event.description}
-                      </p>
+                <div key={event._id} className={`event-card-full ${eventPassed ? 'completed' : 'upcoming'}`}>
+                  <div className="event-card-header">
+                    <div className="event-info">
+                      <h3>{event.name}</h3>
+                      <p className="event-description">{event.description}</p>
                     </div>
-                    <div>
+                    <div className={`status-badge ${eventPassed ? 'completed' : 'upcoming'}`}>
                       {eventPassed ? (
-                        <span style={{
-                          padding: '8px 16px',
-                          borderRadius: '20px',
-                          backgroundColor: '#c6f6d5',
-                          color: '#22543d',
-                          fontWeight: '600',
-                          fontSize: '0.9rem',
-                          display: 'inline-block'
-                        }}>
-                          ✓ Completed
-                        </span>
+                        <>
+                          <CheckCircle2 size={16} />
+                          <span>Completed</span>
+                        </>
                       ) : (
-                        <span style={{
-                          padding: '8px 16px',
-                          borderRadius: '20px',
-                          backgroundColor: '#bee3f8',
-                          color: '#2c5282',
-                          fontWeight: '600',
-                          fontSize: '0.9rem',
-                          display: 'inline-block'
-                        }}>
-                          ⏳ Upcoming
-                        </span>
+                        <>
+                          <Clock size={16} />
+                          <span>Upcoming</span>
+                        </>
                       )}
                     </div>
                   </div>
-
-                  {/* Event Details Grid */}
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    gap: 'var(--space-md)',
-                    marginBottom: 'var(--space-lg)',
-                    padding: 'var(--space-md)',
-                    backgroundColor: '#f7fafc',
-                    borderRadius: '12px'
-                  }}>
-                    <div>
-                      <p style={{ fontSize: '0.85rem', color: '#718096', marginBottom: '4px' }}>📅 Date</p>
-                      <p style={{ fontWeight: '600', color: '#2d3748' }}>
-                        {new Date(event.date).toLocaleDateString()}
-                      </p>
+                  
+                  <div className="event-details-grid">
+                    <div className="detail-item">
+                      <Calendar size={18} />
+                      <div>
+                        <span className="detail-label">Date</span>
+                        <span className="detail-value">{new Date(event.date).toLocaleDateString()}</span>
+                      </div>
                     </div>
-                    <div>
-                      <p style={{ fontSize: '0.85rem', color: '#718096', marginBottom: '4px' }}>🕐 Time</p>
-                      <p style={{ fontWeight: '600', color: '#2d3748' }}>{event.time}</p>
+                    <div className="detail-item">
+                      <Clock size={18} />
+                      <div>
+                        <span className="detail-label">Time</span>
+                        <span className="detail-value">{event.time}</span>
+                      </div>
                     </div>
-                    <div>
-                      <p style={{ fontSize: '0.85rem', color: '#718096', marginBottom: '4px' }}>📍 Venue</p>
-                      <p style={{ fontWeight: '600', color: '#2d3748' }}>{event.venue}</p>
+                    <div className="detail-item">
+                      <MapPin size={18} />
+                      <div>
+                        <span className="detail-label">Venue</span>
+                        <span className="detail-value">{event.venue}</span>
+                      </div>
                     </div>
-                    <div>
-                      <p style={{ fontSize: '0.85rem', color: '#718096', marginBottom: '4px' }}>🎭 Club</p>
-                      <p style={{ fontWeight: '600', color: '#2d3748' }}>{event.club?.name || 'N/A'}</p>
+                    <div className="detail-item">
+                      <Users size={18} />
+                      <div>
+                        <span className="detail-label">Club</span>
+                        <span className="detail-value">{event.club?.name || 'N/A'}</span>
+                      </div>
                     </div>
                   </div>
-
-                  {/* Reviews & Feedback Section */}
+                  
                   {eventPassed && (
-                    <div style={{ marginTop: 'var(--space-lg)' }}>
-                      {/* Action Buttons Container */}
-                      <div style={{
-                        display: 'flex',
-                        gap: 'var(--space-md)',
-                        flexWrap: 'wrap',
-                        marginBottom: reviewingEventId === event._id || feedbackingEventId === event._id ? 'var(--space-md)' : '0'
-                      }}>
-                        {/* Review Button */}
+                    <div className="event-actions-section">
+                      <div className="action-buttons">
                         {!userReviewed && reviewingEventId !== event._id && feedbackingEventId !== event._id && (
-                          <button
-                            onClick={() => setReviewingEventId(event._id)}
-                            className="btn-primary"
-                            style={{
-                              padding: '12px 24px',
-                              borderRadius: '10px',
-                              fontSize: '1rem',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px'
-                            }}
-                          >
-                            <span>⭐</span> Write a Review
+                          <button onClick={() => setReviewingEventId(event._id)} className="btn-review">
+                            <Star size={18} />
+                            <span>Write Review</span>
                           </button>
                         )}
-
-                        {/* Feedback Button */}
+                        
                         {!event.userHasFeedback && feedbackingEventId !== event._id && reviewingEventId !== event._id && (
-                          <button
-                            onClick={() => setFeedbackingEventId(event._id)}
-                            style={{
-                              padding: '12px 24px',
-                              borderRadius: '10px',
-                              fontSize: '1rem',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '8px',
-                              background: 'linear-gradient(135deg, #48bb78, #38a169)',
-                              color: 'white',
-                              border: 'none',
-                              cursor: 'pointer',
-                              fontWeight: '600',
-                              transition: 'all 0.3s ease',
-                              boxShadow: '0 4px 6px rgba(72, 187, 120, 0.3)'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.transform = 'translateY(-2px)';
-                              e.target.style.boxShadow = '0 6px 12px rgba(72, 187, 120, 0.4)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.transform = 'translateY(0)';
-                              e.target.style.boxShadow = '0 4px 6px rgba(72, 187, 120, 0.3)';
-                            }}
-                          >
-                            <span>📝</span> Submit Feedback
+                          <button onClick={() => setFeedbackingEventId(event._id)} className="btn-feedback">
+                            <Send size={18} />
+                            <span>Submit Feedback</span>
                           </button>
                         )}
-
-                        {/* Show badges if already submitted */}
+                        
                         {userReviewed && reviewingEventId !== event._id && (
-                          <span style={{
-                            padding: '12px 20px',
-                            borderRadius: '10px',
-                            fontSize: '0.95rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            backgroundColor: '#c6f6d5',
-                            color: '#22543d',
-                            fontWeight: '600'
-                          }}>
-                            <span>✓</span> Review Submitted
+                          <span className="completed-badge">
+                            <CheckCircle2 size={16} />
+                            <span>Review Submitted</span>
                           </span>
                         )}
-
+                        
                         {event.userHasFeedback && feedbackingEventId !== event._id && (
-                          <span style={{
-                            padding: '12px 20px',
-                            borderRadius: '10px',
-                            fontSize: '0.95rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            backgroundColor: '#c6f6d5',
-                            color: '#22543d',
-                            fontWeight: '600'
-                          }}>
-                            <span>✓</span> Feedback Submitted
+                          <span className="completed-badge">
+                            <CheckCircle2 size={16} />
+                            <span>Feedback Submitted</span>
                           </span>
                         )}
                       </div>
-
-                      {/* Review Form */}
+                      
                       {reviewingEventId === event._id && (
                         <ReviewForm
                           eventId={event._id}
@@ -442,8 +573,7 @@ const MyEvents = () => {
                           onCancel={() => setReviewingEventId(null)}
                         />
                       )}
-
-                      {/* Feedback Form */}
+                      
                       {feedbackingEventId === event._id && (
                         <FeedbackForm
                           eventId={event._id}
@@ -451,71 +581,31 @@ const MyEvents = () => {
                           onCancel={() => setFeedbackingEventId(null)}
                         />
                       )}
-
-                      {/* Display Existing Reviews */}
+                      
                       {event.reviews && event.reviews.length > 0 && (
-                        <div style={{ marginTop: 'var(--space-xl)' }}>
-                          <h4 style={{
-                            marginBottom: 'var(--space-lg)',
-                            color: '#2d3748',
-                            fontSize: '1.2rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px'
-                          }}>
-                            <span>💬</span> Reviews ({event.reviews.length})
+                        <div className="reviews-section">
+                          <h4>
+                            <MessageSquare size={18} />
+                            <span>Reviews ({event.reviews.length})</span>
                           </h4>
-
-                          <div style={{
-                            display: 'grid',
-                            gap: 'var(--space-md)'
-                          }}>
+                          <div className="reviews-list">
                             {event.reviews.map((review, index) => (
-                              <div key={index} style={{
-                                padding: 'var(--space-lg)',
-                                backgroundColor: '#f7fafc',
-                                borderRadius: '12px',
-                                border: '1px solid #e2e8f0'
-                              }}>
-                                <div style={{
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  marginBottom: 'var(--space-sm)'
-                                }}>
-                                  <p style={{
-                                    fontWeight: '600',
-                                    color: '#2d3748',
-                                    fontSize: '1rem'
-                                  }}>
-                                    {review.studentName}
-                                  </p>
-                                  <div style={{
-                                    display: 'flex',
-                                    gap: '4px',
-                                    fontSize: '1.1rem'
-                                  }}>
+                              <div key={index} className="review-item">
+                                <div className="review-header">
+                                  <span className="reviewer-name">{review.studentName}</span>
+                                  <div className="star-rating">
                                     {[...Array(5)].map((_, i) => (
-                                      <span key={i}>
-                                        {i < review.rating ? '⭐' : '☆'}
-                                      </span>
+                                      <Star
+                                        key={i}
+                                        size={14}
+                                        fill={i < review.rating ? '#f59e0b' : 'none'}
+                                        stroke={i < review.rating ? '#f59e0b' : '#cbd5e1'}
+                                      />
                                     ))}
                                   </div>
                                 </div>
-                                <p style={{
-                                  color: '#4a5568',
-                                  lineHeight: '1.6',
-                                  marginTop: 'var(--space-sm)'
-                                }}>
-                                  {review.comment}
-                                </p>
-                                <p style={{
-                                  fontSize: '0.85rem',
-                                  color: '#a0aec0',
-                                  marginTop: 'var(--space-sm)'
-                                }}>
-                                  {new Date(review.createdAt).toLocaleDateString()}
-                                </p>
+                                <p className="review-comment">{review.comment}</p>
+                                <span className="review-date">{new Date(review.createdAt).toLocaleDateString()}</span>
                               </div>
                             ))}
                           </div>
@@ -529,9 +619,353 @@ const MyEvents = () => {
           </div>
         )}
       </div>
+      
+      <style>{myEventsStyles}</style>
     </div>
   );
 };
+
+const myEventsStyles = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+  
+  .student-dashboard {
+    min-height: calc(100vh - 70px);
+    background: linear-gradient(135deg, #f0f9ff 0%, #f8fafc 50%, #f0fdf4 100%);
+    padding: 40px 24px;
+    font-family: 'DM Sans', -apple-system, sans-serif;
+  }
+  
+  .dashboard-container {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+  }
+  
+  .loading-icon {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-bottom: 20px;
+  }
+  
+  .loading-state h2 {
+    font-size: 20px;
+    color: #64748b;
+    font-weight: 600;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  .spin {
+    animation: spin 1s linear infinite;
+  }
+  
+  .page-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  
+  .header-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 24px rgba(30, 64, 175, 0.25);
+  }
+  
+  .page-header h1 {
+    font-size: 36px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 80px 24px;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  }
+  
+  .empty-icon {
+    width: 96px;
+    height: 96px;
+    background: #f0f9ff;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0ea5e9;
+    margin: 0 auto 24px;
+  }
+  
+  .empty-state h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  .empty-state p {
+    font-size: 16px;
+    color: #64748b;
+  }
+  
+  .my-events-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .event-card-full {
+    background: white;
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+  }
+  
+  .event-card-full.completed {
+    border-color: #22c55e;
+  }
+  
+  .event-card-full.upcoming {
+    border-color: #0ea5e9;
+  }
+  
+  .event-card-full:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(30, 64, 175, 0.1);
+  }
+  
+  .event-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  
+  .event-info h3 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  .event-description {
+    color: #64748b;
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  
+  .status-badge.completed {
+    background: #dcfce7;
+    color: #166534;
+  }
+  
+  .status-badge.upcoming {
+    background: #e0f2fe;
+    color: #0369a1;
+  }
+  
+  .event-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 16px;
+  }
+  
+  .detail-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .detail-item svg {
+    color: #0ea5e9;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  
+  .detail-label {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 2px;
+  }
+  
+  .detail-value {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+  
+  .event-actions-section {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e2e8f0;
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  
+  .btn-review {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+  }
+  
+  .btn-review:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(30, 64, 175, 0.35);
+  }
+  
+  .btn-feedback {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #22c55e 0%, #10b981 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+  }
+  
+  .btn-feedback:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(34, 197, 94, 0.35);
+  }
+  
+  .completed-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 20px;
+    background: #dcfce7;
+    color: #166534;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  
+  .reviews-section {
+    margin-top: 24px;
+  }
+  
+  .reviews-section h4 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 16px;
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  .reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .review-item {
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  .reviewer-name {
+    font-weight: 600;
+    color: #0f172a;
+  }
+  
+  .star-rating {
+    display: flex;
+    gap: 2px;
+  }
+  
+  .review-comment {
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+  
+  .review-date {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+`;
 
 const ViewClubs = () => {
   const [clubs, setClubs] = useState([]);
@@ -553,83 +987,288 @@ const ViewClubs = () => {
   };
 
   if (loading) return (
-    <div className="dashboard">
-      <div className="section">
+    <div className="student-dashboard">
+      <div className="loading-state">
+        <div className="loading-icon">
+          <Loader2 size={32} className="spin" />
+        </div>
         <h2>Loading clubs...</h2>
       </div>
+      <style>{viewClubsStyles}</style>
     </div>
   );
 
   return (
-    <div className="dashboard">
-      <h2>Campus Clubs 🎭</h2>
-      <div className="card-grid">
+    <div className="student-dashboard">
+      <div className="dashboard-container">
+        <div className="page-header">
+          <div className="header-icon">
+            <Users size={28} />
+          </div>
+          <h1>Campus Clubs</h1>
+        </div>
+        
         {clubs.length === 0 ? (
-          <div className="card" style={{ textAlign: 'center' }}>
-            <p style={{ color: 'var(--text-light)' }}>No clubs available.</p>
+          <div className="empty-state">
+            <div className="empty-icon">
+              <Users size={48} />
+            </div>
+            <h3>No Clubs Available</h3>
+            <p>Check back soon for exciting student clubs!</p>
           </div>
         ) : (
-          clubs.map((club) => (
-            <div key={club._id} className="card">
-              {club.image && (
-                <img
-                  src={club.image}
-                  alt={club.name}
-                  style={{
-                    width: '100%',
-                    height: '150px',
-                    objectFit: 'cover',
-                    borderRadius: 'var(--radius-md)',
-                    marginBottom: 'var(--space-md)'
-                  }}
-                />
-              )}
-              <h3 style={{
-                marginBottom: 'var(--space-sm)',
-                background: 'var(--secondary-gradient)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}>
-                {club.name}
-              </h3>
-              <p style={{
-                marginBottom: 'var(--space-md)',
-                color: 'var(--text-light)',
-                lineHeight: '1.6'
-              }}>
-                {club.description}
-              </p>
-              <div style={{
-                padding: 'var(--space-md)',
-                background: 'var(--bg-light)',
-                borderRadius: 'var(--radius-sm)',
-                marginTop: 'auto'
-              }}>
-                <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: '600', marginBottom: 'var(--space-xs)' }}>
-                  👥 Coordinators:
-                </p>
-                {club.coordinators && club.coordinators.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
-                    {club.coordinators.map((coordinator, index) => (
-                      <p key={coordinator._id || index} style={{ margin: 0, fontSize: '0.85rem', paddingLeft: 'var(--space-sm)' }}>
-                        • {coordinator.name}
-                      </p>
-                    ))}
+          <div className="clubs-grid">
+            {clubs.map((club) => (
+              <div key={club._id} className="club-card">
+                {club.image && (
+                  <div className="club-image">
+                    <img src={club.image} alt={club.name} />
                   </div>
-                ) : (
-                  <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-light)', paddingLeft: 'var(--space-sm)' }}>
-                    No coordinators assigned
-                  </p>
                 )}
+                <div className="club-content">
+                  <h3>{club.name}</h3>
+                  <p className="club-description">{club.description}</p>
+                  <div className="coordinators-section">
+                    <div className="coordinators-label">
+                      <Users size={16} />
+                      <span>Coordinators</span>
+                    </div>
+                    {club.coordinators && club.coordinators.length > 0 ? (
+                      <div className="coordinators-list">
+                        {club.coordinators.map((coordinator, index) => (
+                          <span key={coordinator._id || index} className="coordinator-name">
+                            {coordinator.name}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="no-coordinators">No coordinators assigned</span>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
+      
+      <style>{viewClubsStyles}</style>
     </div>
   );
 };
+
+const viewClubsStyles = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+  
+  .student-dashboard {
+    min-height: calc(100vh - 70px);
+    background: linear-gradient(135deg, #f0f9ff 0%, #f8fafc 50%, #f0fdf4 100%);
+    padding: 40px 24px;
+    font-family: 'DM Sans', -apple-system, sans-serif;
+  }
+  
+  .dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+  }
+  
+  .loading-icon {
+    width: 72px;
+    height: 72px;
+    background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-bottom: 20px;
+  }
+  
+  .loading-state h2 {
+    font-size: 20px;
+    color: #64748b;
+    font-weight: 600;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  .spin {
+    animation: spin 1s linear infinite;
+  }
+  
+  .page-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  
+  .header-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 24px rgba(30, 64, 175, 0.25);
+  }
+  
+  .page-header h1 {
+    font-size: 36px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 80px 24px;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  }
+  
+  .empty-icon {
+    width: 96px;
+    height: 96px;
+    background: #f0f9ff;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0ea5e9;
+    margin: 0 auto 24px;
+  }
+  
+  .empty-state h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  .empty-state p {
+    font-size: 16px;
+    color: #64748b;
+  }
+  
+  .clubs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 28px;
+  }
+  
+  .club-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+  }
+  
+  .club-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(30, 64, 175, 0.12);
+  }
+  
+  .club-image {
+    height: 160px;
+    overflow: hidden;
+  }
+  
+  .club-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  
+  .club-card:hover .club-image img {
+    transform: scale(1.05);
+  }
+  
+  .club-content {
+    padding: 24px;
+  }
+  
+  .club-content h3 {
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+    font-family: 'Outfit', sans-serif;
+  }
+  
+  .club-description {
+    color: #64748b;
+    line-height: 1.6;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  
+  .coordinators-section {
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+  }
+  
+  .coordinators-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 10px;
+  }
+  
+  .coordinators-label svg {
+    color: #0ea5e9;
+  }
+  
+  .coordinators-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .coordinator-name {
+    font-size: 13px;
+    color: #64748b;
+    padding-left: 8px;
+  }
+  
+  .coordinator-name::before {
+    content: '• ';
+    color: #0ea5e9;
+  }
+  
+  .no-coordinators {
+    font-size: 13px;
+    color: #94a3b8;
+    padding-left: 8px;
+  }
+`;
 
 const StudentDashboard = () => {
   const navItems = [

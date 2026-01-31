@@ -2,6 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useToast } from '../../components/Toast';
 import api from '../../utils/api';
 import * as XLSX from 'xlsx';
+import { 
+  Users, 
+  Calendar, 
+  MapPin, 
+  Loader2, 
+  FileSpreadsheet, 
+  MailX, 
+  CheckCircle2, 
+  XCircle, 
+  Clock,
+  Star,
+  User,
+  Mail,
+  Building2,
+  Phone
+} from 'lucide-react';
 
 const ViewParticipants = () => {
   const [events, setEvents] = useState([]);
@@ -18,7 +34,6 @@ const ViewParticipants = () => {
   const fetchMyEvents = async () => {
     try {
       const response = await api.get('/coordinator/events');
-      // Filter only approved events
       const approvedEvents = response.data.filter(event => event.status === 'approved');
       setEvents(approvedEvents);
       setLoading(false);
@@ -36,9 +51,7 @@ const ViewParticipants = () => {
   const fetchParticipants = async (eventId) => {
     setLoadingParticipants(true);
     try {
-      console.log('Fetching participants for event ID:', eventId);
       const response = await api.get(`/coordinator/event/${eventId}/participants`);
-      console.log('Response received:', response.data);
       setParticipants(response.data.participants || []);
       setEventDetails(response.data.event);
       setAttendance(response.data.attendance || []);
@@ -46,20 +59,15 @@ const ViewParticipants = () => {
       setSelectedEvent(eventId);
       setLoadingParticipants(false);
     } catch (error) {
-      console.error('Error fetching participants:', error);
-      console.error('Error response:', error.response);
-      console.error('Error message:', error.message);
-
       let errorMessage = 'Failed to fetch participants';
       if (error.response) {
         errorMessage = error.response.data?.message || `Server error: ${error.response.status}`;
       } else if (error.request) {
         errorMessage = 'No response from server. Please check if backend is running.';
       }
-
       showError(errorMessage);
       setLoadingParticipants(false);
-      setSelectedEvent(null); // Reset selection on error
+      setSelectedEvent(null);
     }
   };
 
@@ -70,8 +78,6 @@ const ViewParticipants = () => {
         studentId,
         status
       });
-
-      // Update local attendance state
       setAttendance(response.data.attendance || []);
       showSuccess(`Attendance marked as ${status}`);
     } catch (error) {
@@ -93,11 +99,9 @@ const ViewParticipants = () => {
 
   const isEventStarted = () => {
     if (!eventDetails) return false;
-
     const eventDate = new Date(eventDetails.date);
     const [hours, minutes] = eventDetails.time.split(':');
     eventDate.setHours(parseInt(hours), parseInt(minutes), 0);
-
     return new Date() >= eventDate;
   };
 
@@ -108,7 +112,6 @@ const ViewParticipants = () => {
     }
 
     try {
-      // Prepare data for Excel
       const excelData = participants.map((participant, index) => {
         const attendanceRecord = attendance.find(att => att.student === participant._id);
         const attendanceStatus = attendanceRecord ?
@@ -132,7 +135,6 @@ const ViewParticipants = () => {
         };
       });
 
-      // Add event details at the top
       const eventInfo = [
         { 'S.No': 'Event Details', 'Student ID': '', 'Name': '', 'Email': '', 'Department': '', 'Contact No': '', 'Feedback Rating': '', 'Feedback Comment': '', 'Attendance': '' },
         { 'S.No': 'Event Name', 'Student ID': eventDetails.name, 'Name': '', 'Email': '', 'Department': '', 'Contact No': '', 'Feedback Rating': '', 'Feedback Comment': '', 'Attendance': '' },
@@ -149,537 +151,696 @@ const ViewParticipants = () => {
       ];
 
       const finalData = [...eventInfo, ...excelData];
-
-      // Create workbook and worksheet
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.json_to_sheet(finalData);
 
-      // Set column widths
       ws['!cols'] = [
-        { wch: 8 },  // S.No
-        { wch: 15 }, // Student ID
-        { wch: 25 }, // Name
-        { wch: 30 }, // Email
-        { wch: 20 }, // Department
-        { wch: 15 }, // Contact No
-        { wch: 18 }, // Feedback Rating
-        { wch: 40 }, // Feedback Comment
-        { wch: 15 }  // Attendance
+        { wch: 8 }, { wch: 15 }, { wch: 25 }, { wch: 30 },
+        { wch: 20 }, { wch: 15 }, { wch: 18 }, { wch: 40 }, { wch: 15 }
       ];
 
       XLSX.utils.book_append_sheet(wb, ws, 'Participants');
-
-      // Generate filename with event name and date
       const filename = `${eventDetails.name.replace(/[^a-z0-9]/gi, '_')}_Attendance_${new Date().toISOString().split('T')[0]}.xlsx`;
-
-      // Save file
       XLSX.writeFile(wb, filename);
-
-      showSuccess('Excel file with attendance downloaded successfully! 📊');
+      showSuccess('Excel file downloaded successfully!');
     } catch (error) {
       console.error('Export error:', error);
       showError('Failed to export Excel file');
     }
   };
 
+  const styles = `
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap');
+    
+    .view-participants {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f0f9ff 0%, #f8fafc 50%, #f0fdf4 100%);
+      padding: 32px;
+    }
+    
+    .page-header {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    
+    .header-icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .page-header h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 0;
+    }
+    
+    .section-card {
+      background: white;
+      border-radius: 24px;
+      padding: 32px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(30, 64, 175, 0.08);
+      margin-bottom: 32px;
+    }
+    
+    .section-card h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 24px 0;
+    }
+    
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    
+    .event-card {
+      padding: 24px;
+      border-radius: 16px;
+      border: 2px solid #e2e8f0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: white;
+    }
+    
+    .event-card:hover {
+      border-color: #0ea5e9;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(14, 165, 233, 0.15);
+    }
+    
+    .event-card.selected {
+      border-color: #1e40af;
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      transform: scale(1.02);
+    }
+    
+    .event-card h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 12px 0;
+    }
+    
+    .event-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #64748b;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      font-family: 'DM Sans', sans-serif;
+    }
+    
+    .participant-count {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #1e40af;
+      margin-top: 16px;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 48px;
+    }
+    
+    .empty-icon {
+      width: 96px;
+      height: 96px;
+      background: linear-gradient(135deg, #e0e7ff 0%, #bae6fd 100%);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    
+    .empty-state h3 {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0 0 8px 0;
+    }
+    
+    .empty-state p {
+      font-family: 'DM Sans', sans-serif;
+      color: #64748b;
+      margin: 0;
+    }
+    
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 64px;
+      gap: 16px;
+    }
+    
+    .loading-icon {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .spin {
+      animation: spin 1s linear infinite;
+    }
+    
+    .loading-state p {
+      font-family: 'DM Sans', sans-serif;
+      color: #64748b;
+      font-size: 1.1rem;
+    }
+    
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .header-row h2 {
+      margin: 0;
+    }
+    
+    .export-btn {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+    
+    .export-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(34, 197, 94, 0.35);
+    }
+    
+    .info-banner {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      border-radius: 14px;
+      margin-bottom: 24px;
+    }
+    
+    .info-banner.available {
+      background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+      border: 1px solid #86efac;
+    }
+    
+    .info-banner.unavailable {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border: 1px solid #fcd34d;
+    }
+    
+    .info-banner-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .info-banner.available .info-banner-icon {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    }
+    
+    .info-banner.unavailable .info-banner-icon {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    .info-banner-text h4 {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0 0 4px 0;
+    }
+    
+    .info-banner-text p {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      color: #64748b;
+      margin: 0;
+    }
+    
+    .participants-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    
+    .participants-table th {
+      background: linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%);
+      color: white;
+      padding: 16px;
+      text-align: left;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .participants-table th:first-child {
+      border-radius: 12px 0 0 12px;
+    }
+    
+    .participants-table th:last-child {
+      border-radius: 0 12px 12px 0;
+    }
+    
+    .participants-table td {
+      padding: 16px;
+      border-bottom: 1px solid #e2e8f0;
+      font-family: 'DM Sans', sans-serif;
+      color: #334155;
+      vertical-align: middle;
+    }
+    
+    .participants-table tr:hover td {
+      background: #f8fafc;
+    }
+    
+    .participant-name {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    
+    .participant-photo {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+    
+    .feedback-cell {
+      padding: 12px;
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      border-radius: 10px;
+      border: 1px solid #86efac;
+    }
+    
+    .feedback-stars {
+      display: flex;
+      gap: 2px;
+      justify-content: center;
+      margin-bottom: 4px;
+    }
+    
+    .feedback-rating {
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #166534;
+      margin-bottom: 4px;
+    }
+    
+    .feedback-comment {
+      font-size: 0.8rem;
+      color: #64748b;
+      font-style: italic;
+      text-align: center;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .no-feedback {
+      text-align: center;
+      padding: 8px;
+      color: #94a3b8;
+      font-size: 0.85rem;
+      font-style: italic;
+    }
+    
+    .attendance-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    
+    .attendance-status.present {
+      background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+      color: #166534;
+      border: 1px solid #86efac;
+    }
+    
+    .attendance-status.absent {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+    
+    .attendance-buttons {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+    
+    .present-btn {
+      padding: 8px 14px;
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    
+    .present-btn:hover:not(:disabled) {
+      transform: scale(1.05);
+    }
+    
+    .present-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .absent-btn {
+      padding: 8px 14px;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    
+    .absent-btn:hover:not(:disabled) {
+      transform: scale(1.05);
+    }
+    
+    .absent-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  `;
+
   if (loading) {
     return (
-      <div className="dashboard">
-        <div className="section" style={{
-          minHeight: '60vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: 'var(--space-md)' }}>⏳</div>
-            <h2>Loading events...</h2>
+      <>
+        <style>{styles}</style>
+        <div className="view-participants">
+          <div className="section-card">
+            <div className="loading-state">
+              <div className="loading-icon">
+                <Loader2 size={32} color="white" className="spin" />
+              </div>
+              <p>Loading events...</p>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="dashboard">
-      <h2 style={{
-        fontSize: '2.5rem',
-        background: 'linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end))',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        marginBottom: 'var(--space-lg)'
-      }}>
-        👥 View Participants
-      </h2>
-
-      {/* Events List */}
-      <div className="section">
-        <h3 style={{ marginBottom: 'var(--space-lg)', color: '#2d3748' }}>Select an Event</h3>
-
-        {events.length === 0 ? (
-          <div className="card" style={{ textAlign: 'center', padding: 'var(--space-2xl)' }}>
-            <div style={{ fontSize: '3rem', marginBottom: 'var(--space-md)' }}>📭</div>
-            <h3>No Approved Events</h3>
-            <p style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-sm)' }}>
-              You don't have any approved events yet.
-            </p>
+    <>
+      <style>{styles}</style>
+      <div className="view-participants">
+        <div className="page-header">
+          <div className="header-icon">
+            <Users size={28} color="white" />
           </div>
-        ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: 'var(--space-lg)'
-          }}>
-            {events.map((event) => (
-              <div
-                key={event._id}
-                className="card"
-                style={{
-                  padding: 'var(--space-lg)',
-                  cursor: 'pointer',
-                  border: selectedEvent === event._id ? '2px solid var(--primary-gradient-start)' : '1px solid #e2e8f0',
-                  transition: 'all 0.3s ease',
-                  transform: selectedEvent === event._id ? 'scale(1.02)' : 'scale(1)'
-                }}
-                onClick={() => fetchParticipants(event._id)}
-              >
-                <h3 style={{
-                  marginBottom: 'var(--space-sm)',
-                  color: '#2d3748',
-                  fontSize: '1.2rem'
-                }}>
-                  {event.name}
-                </h3>
-                <p style={{
-                  fontSize: '0.9rem',
-                  color: '#718096',
-                  marginBottom: 'var(--space-sm)'
-                }}>
-                  📅 {new Date(event.date).toLocaleDateString()}
-                </p>
-                <p style={{
-                  fontSize: '0.9rem',
-                  color: '#718096',
-                  marginBottom: 'var(--space-md)'
-                }}>
-                  📍 {event.venue}
-                </p>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 12px',
-                  backgroundColor: '#edf2f7',
-                  borderRadius: '8px',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  color: '#4a5568'
-                }}>
-                  <span>👥</span>
-                  <span>{event.registeredStudents?.length || 0} Participants</span>
-                </div>
+          <h1>View Participants</h1>
+        </div>
+
+        <div className="section-card">
+          <h2>Select an Event</h2>
+          {events.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">
+                <MailX size={40} color="#1e40af" />
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Participants Table */}
-      {selectedEvent && (
-        <div className="section" style={{ marginTop: 'var(--space-xxl)' }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 'var(--space-lg)',
-            flexWrap: 'wrap',
-            gap: 'var(--space-md)'
-          }}>
-            <h3 style={{ color: '#2d3748', margin: 0 }}>
-              Participants List
-              {eventDetails && (
-                <span style={{
-                  marginLeft: 'var(--space-md)',
-                  fontSize: '0.9rem',
-                  color: '#718096',
-                  fontWeight: 'normal'
-                }}>
-                  ({participants.length} {participants.length === 1 ? 'student' : 'students'})
-                </span>
-              )}
-            </h3>
-            {participants.length > 0 && (
-              <button
-                onClick={exportToExcel}
-                style={{
-                  padding: '12px 24px',
-                  borderRadius: '10px',
-                  fontSize: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  background: 'linear-gradient(135deg, #48bb78, #38a169)',
-                  color: 'white',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontWeight: '600',
-                  transition: 'all 0.3s ease',
-                  boxShadow: '0 4px 6px rgba(72, 187, 120, 0.3)'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 6px 12px rgba(72, 187, 120, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 6px rgba(72, 187, 120, 0.3)';
-                }}
-              >
-                <span>📊</span> Export to Excel
-              </button>
-            )}
-          </div>
-
-          {loadingParticipants ? (
-            <div style={{ textAlign: 'center', padding: 'var(--space-2xl)' }}>
-              <div style={{ fontSize: '2rem', marginBottom: 'var(--space-md)' }}>⏳</div>
-              <p>Loading participants...</p>
-            </div>
-          ) : participants.length === 0 ? (
-            <div className="card" style={{ textAlign: 'center', padding: 'var(--space-2xl)' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: 'var(--space-md)' }}>😔</div>
-              <h3>No Participants Yet</h3>
-              <p style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-sm)' }}>
-                No students have registered for this event yet.
-              </p>
+              <h3>No Approved Events</h3>
+              <p>You don't have any approved events yet.</p>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              {/* Attendance Info Banner */}
-              {isEventStarted() ? (
-                <div style={{
-                  marginBottom: 'var(--space-lg)',
-                  padding: 'var(--space-md)',
-                  background: 'linear-gradient(135deg, rgba(72, 187, 120, 0.1), rgba(56, 161, 105, 0.1))',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(72, 187, 120, 0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px'
-                }}>
-                  <span style={{ fontSize: '1.5rem' }}>✅</span>
-                  <div>
-                    <p style={{ margin: 0, fontWeight: '600', color: '#2d3748' }}>
-                      Attendance Marking Available
-                    </p>
-                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#718096' }}>
-                      Event has started. You can now mark student attendance.
-                    </p>
+            <div className="events-grid">
+              {events.map((event) => (
+                <div
+                  key={event._id}
+                  className={`event-card ${selectedEvent === event._id ? 'selected' : ''}`}
+                  onClick={() => fetchParticipants(event._id)}
+                >
+                  <h3>{event.name}</h3>
+                  <div className="event-meta">
+                    <Calendar size={16} />
+                    {new Date(event.date).toLocaleDateString()}
+                  </div>
+                  <div className="event-meta">
+                    <MapPin size={16} />
+                    {event.venue}
+                  </div>
+                  <div className="participant-count">
+                    <Users size={18} />
+                    {event.registeredStudents?.length || 0} Participants
                   </div>
                 </div>
-              ) : (
-                <div style={{
-                  marginBottom: 'var(--space-lg)',
-                  padding: 'var(--space-md)',
-                  background: 'linear-gradient(135deg, rgba(237, 137, 54, 0.1), rgba(246, 173, 85, 0.1))',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(237, 137, 54, 0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px'
-                }}>
-                  <span style={{ fontSize: '1.5rem' }}>⏰</span>
-                  <div>
-                    <p style={{ margin: 0, fontWeight: '600', color: '#2d3748' }}>
-                      Attendance Not Available Yet
-                    </p>
-                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#718096' }}>
-                      Attendance marking will be available after the event starts at {eventDetails.time}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f7fafc' }}>
-                    <th style={{
-                      padding: 'var(--space-md)',
-                      textAlign: 'left',
-                      borderBottom: '2px solid #e2e8f0',
-                      color: '#2d3748',
-                      fontWeight: '600'
-                    }}>
-                      S.No
-                    </th>
-                    <th style={{
-                      padding: 'var(--space-md)',
-                      textAlign: 'left',
-                      borderBottom: '2px solid #e2e8f0',
-                      color: '#2d3748',
-                      fontWeight: '600'
-                    }}>
-                      Student ID
-                    </th>
-                    <th style={{
-                      padding: 'var(--space-md)',
-                      textAlign: 'left',
-                      borderBottom: '2px solid #e2e8f0',
-                      color: '#2d3748',
-                      fontWeight: '600'
-                    }}>
-                      Name
-                    </th>
-                    <th style={{
-                      padding: 'var(--space-md)',
-                      textAlign: 'left',
-                      borderBottom: '2px solid #e2e8f0',
-                      color: '#2d3748',
-                      fontWeight: '600'
-                    }}>
-                      Email
-                    </th>
-                    <th style={{
-                      padding: 'var(--space-md)',
-                      textAlign: 'left',
-                      borderBottom: '2px solid #e2e8f0',
-                      color: '#2d3748',
-                      fontWeight: '600'
-                    }}>
-                      Department
-                    </th>
-                    <th style={{
-                      padding: 'var(--space-md)',
-                      textAlign: 'left',
-                      borderBottom: '2px solid #e2e8f0',
-                      color: '#2d3748',
-                      fontWeight: '600'
-                    }}>
-                      Contact
-                    </th>
-                    <th style={{
-                      padding: 'var(--space-md)',
-                      textAlign: 'center',
-                      borderBottom: '2px solid #e2e8f0',
-                      color: '#2d3748',
-                      fontWeight: '600',
-                      minWidth: '200px'
-                    }}>
-                      Feedback
-                    </th>
-                    {isEventStarted() && (
-                      <th style={{
-                        padding: 'var(--space-md)',
-                        textAlign: 'center',
-                        borderBottom: '2px solid #e2e8f0',
-                        color: '#2d3748',
-                        fontWeight: '600'
-                      }}>
-                        Attendance
-                      </th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {participants.map((participant, index) => {
-                    const attendanceStatus = getAttendanceStatus(participant._id);
-                    const isMarking = markingAttendance[participant._id];
-                    const feedback = getFeedback(participant._id);
-
-                    return (
-                      <tr
-                        key={participant._id}
-                        style={{
-                          borderBottom: '1px solid #e2e8f0',
-                          transition: 'background-color 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f7fafc'}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      >
-                        <td style={{ padding: 'var(--space-md)', color: '#4a5568' }}>
-                          {index + 1}
-                        </td>
-                        <td style={{ padding: 'var(--space-md)', color: '#4a5568', fontWeight: '600' }}>
-                          {participant.studentId || 'N/A'}
-                        </td>
-                        <td style={{ padding: 'var(--space-md)', color: '#2d3748', fontWeight: '600' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            {participant.photo && (
-                              <img
-                                src={participant.photo}
-                                alt={participant.name}
-                                style={{
-                                  width: '40px',
-                                  height: '40px',
-                                  borderRadius: '50%',
-                                  objectFit: 'cover'
-                                }}
-                              />
-                            )}
-                            {participant.name}
-                          </div>
-                        </td>
-                        <td style={{ padding: 'var(--space-md)', color: '#4a5568' }}>
-                          {participant.email}
-                        </td>
-                        <td style={{ padding: 'var(--space-md)', color: '#4a5568' }}>
-                          {participant.department || 'N/A'}
-                        </td>
-                        <td style={{ padding: 'var(--space-md)', color: '#4a5568' }}>
-                          {participant.contactNo || 'N/A'}
-                        </td>
-                        <td style={{ padding: 'var(--space-md)' }}>
-                          {feedback ? (
-                            <div style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '8px',
-                              padding: '8px',
-                              background: 'linear-gradient(135deg, rgba(72, 187, 120, 0.08), rgba(56, 161, 105, 0.08))',
-                              borderRadius: '8px',
-                              border: '1px solid rgba(72, 187, 120, 0.2)'
-                            }}>
-                              {/* Star Rating */}
-                              <div style={{
-                                display: 'flex',
-                                gap: '4px',
-                                justifyContent: 'center',
-                                fontSize: '1.1rem'
-                              }}>
-                                {[...Array(5)].map((_, i) => (
-                                  <span
-                                    key={i}
-                                    style={{
-                                      color: i < feedback.rating ? '#48bb78' : '#e2e8f0',
-                                      textShadow: i < feedback.rating ? '0 2px 4px rgba(72, 187, 120, 0.3)' : 'none'
-                                    }}
-                                  >
-                                    {i < feedback.rating ? '⭐' : '☆'}
-                                  </span>
-                                ))}
-                              </div>
-                              {/* Rating Number */}
-                              <div style={{
-                                textAlign: 'center',
-                                fontSize: '0.85rem',
-                                fontWeight: '600',
-                                color: '#2f855a'
-                              }}>
-                                {feedback.rating}/5
-                              </div>
-                              {/* Comment Preview */}
-                              <div style={{
-                                fontSize: '0.8rem',
-                                color: '#4a5568',
-                                fontStyle: 'italic',
-                                textAlign: 'center',
-                                maxWidth: '200px',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap'
-                              }} title={feedback.comment}>
-                                "{feedback.comment}"
-                              </div>
-                            </div>
-                          ) : (
-                            <div style={{
-                              textAlign: 'center',
-                              padding: '8px',
-                              color: '#a0aec0',
-                              fontSize: '0.85rem',
-                              fontStyle: 'italic'
-                            }}>
-                              No feedback yet
-                            </div>
-                          )}
-                        </td>
-                        {isEventStarted() && (
-                          <td style={{ padding: 'var(--space-md)' }}>
-                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', alignItems: 'center' }}>
-                              {attendanceStatus ? (
-                                <div style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '8px',
-                                  padding: '6px 12px',
-                                  borderRadius: '8px',
-                                  background: attendanceStatus === 'present'
-                                    ? 'linear-gradient(135deg, rgba(72, 187, 120, 0.15), rgba(56, 161, 105, 0.15))'
-                                    : 'linear-gradient(135deg, rgba(245, 101, 101, 0.15), rgba(229, 62, 62, 0.15))',
-                                  border: `1px solid ${attendanceStatus === 'present' ? '#48bb78' : '#f56565'}`,
-                                  fontWeight: '600',
-                                  fontSize: '0.85rem'
-                                }}>
-                                  <span>{attendanceStatus === 'present' ? '✅' : '❌'}</span>
-                                  <span style={{ color: attendanceStatus === 'present' ? '#2f855a' : '#c53030' }}>
-                                    {attendanceStatus === 'present' ? 'Present' : 'Absent'}
-                                  </span>
-                                </div>
-                              ) : (
-                                <>
-                                  <button
-                                    onClick={() => markAttendance(participant._id, 'present')}
-                                    disabled={isMarking}
-                                    style={{
-                                      padding: '6px 12px',
-                                      borderRadius: '6px',
-                                      border: 'none',
-                                      background: 'linear-gradient(135deg, #48bb78, #38a169)',
-                                      color: 'white',
-                                      cursor: isMarking ? 'not-allowed' : 'pointer',
-                                      fontWeight: '600',
-                                      fontSize: '0.85rem',
-                                      transition: 'all 0.2s ease',
-                                      opacity: isMarking ? 0.6 : 1
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      if (!isMarking) e.target.style.transform = 'scale(1.05)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      if (!isMarking) e.target.style.transform = 'scale(1)';
-                                    }}
-                                  >
-                                    ✅ Present
-                                  </button>
-                                  <button
-                                    onClick={() => markAttendance(participant._id, 'absent')}
-                                    disabled={isMarking}
-                                    style={{
-                                      padding: '6px 12px',
-                                      borderRadius: '6px',
-                                      border: 'none',
-                                      background: 'linear-gradient(135deg, #f56565, #e53e3e)',
-                                      color: 'white',
-                                      cursor: isMarking ? 'not-allowed' : 'pointer',
-                                      fontWeight: '600',
-                                      fontSize: '0.85rem',
-                                      transition: 'all 0.2s ease',
-                                      opacity: isMarking ? 0.6 : 1
-                                    }}
-                                    onMouseEnter={(e) => {
-                                      if (!isMarking) e.target.style.transform = 'scale(1.05)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                      if (!isMarking) e.target.style.transform = 'scale(1)';
-                                    }}
-                                  >
-                                    ❌ Absent
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          </td>
-                        )}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              ))}
             </div>
           )}
         </div>
-      )}
-    </div>
+
+        {selectedEvent && (
+          <div className="section-card">
+            <div className="header-row">
+              <h2>
+                Participants List
+                {eventDetails && (
+                  <span style={{ fontWeight: 'normal', fontSize: '0.9rem', color: '#64748b', marginLeft: '12px' }}>
+                    ({participants.length} {participants.length === 1 ? 'student' : 'students'})
+                  </span>
+                )}
+              </h2>
+              {participants.length > 0 && (
+                <button className="export-btn" onClick={exportToExcel}>
+                  <FileSpreadsheet size={18} />
+                  Export to Excel
+                </button>
+              )}
+            </div>
+
+            {loadingParticipants ? (
+              <div className="loading-state">
+                <div className="loading-icon">
+                  <Loader2 size={32} color="white" className="spin" />
+                </div>
+                <p>Loading participants...</p>
+              </div>
+            ) : participants.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">
+                  <Users size={40} color="#1e40af" />
+                </div>
+                <h3>No Participants Yet</h3>
+                <p>No students have registered for this event yet.</p>
+              </div>
+            ) : (
+              <>
+                {isEventStarted() ? (
+                  <div className="info-banner available">
+                    <div className="info-banner-icon">
+                      <CheckCircle2 size={24} color="white" />
+                    </div>
+                    <div className="info-banner-text">
+                      <h4>Attendance Marking Available</h4>
+                      <p>Event has started. You can now mark student attendance.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="info-banner unavailable">
+                    <div className="info-banner-icon">
+                      <Clock size={24} color="white" />
+                    </div>
+                    <div className="info-banner-text">
+                      <h4>Attendance Not Available Yet</h4>
+                      <p>Attendance marking will be available after the event starts at {eventDetails?.time}</p>
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="participants-table">
+                    <thead>
+                      <tr>
+                        <th>S.No</th>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Contact</th>
+                        <th style={{ textAlign: 'center' }}>Feedback</th>
+                        {isEventStarted() && <th style={{ textAlign: 'center' }}>Attendance</th>}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {participants.map((participant, index) => {
+                        const attendanceStatus = getAttendanceStatus(participant._id);
+                        const isMarking = markingAttendance[participant._id];
+                        const feedback = getFeedback(participant._id);
+
+                        return (
+                          <tr key={participant._id}>
+                            <td>{index + 1}</td>
+                            <td style={{ fontWeight: 600 }}>{participant.studentId || 'N/A'}</td>
+                            <td>
+                              <div className="participant-name">
+                                {participant.photo ? (
+                                  <img src={participant.photo} alt={participant.name} className="participant-photo" />
+                                ) : (
+                                  <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg, #1e40af 0%, #0ea5e9 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <User size={20} color="white" />
+                                  </div>
+                                )}
+                                {participant.name}
+                              </div>
+                            </td>
+                            <td>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <Mail size={14} color="#64748b" />
+                                {participant.email}
+                              </span>
+                            </td>
+                            <td>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <Building2 size={14} color="#64748b" />
+                                {participant.department || 'N/A'}
+                              </span>
+                            </td>
+                            <td>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <Phone size={14} color="#64748b" />
+                                {participant.contactNo || 'N/A'}
+                              </span>
+                            </td>
+                            <td>
+                              {feedback ? (
+                                <div className="feedback-cell">
+                                  <div className="feedback-stars">
+                                    {[...Array(5)].map((_, i) => (
+                                      <Star
+                                        key={i}
+                                        size={16}
+                                        fill={i < feedback.rating ? '#22c55e' : 'none'}
+                                        color={i < feedback.rating ? '#22c55e' : '#cbd5e1'}
+                                      />
+                                    ))}
+                                  </div>
+                                  <div className="feedback-rating">{feedback.rating}/5</div>
+                                  <div className="feedback-comment" title={feedback.comment}>
+                                    "{feedback.comment}"
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="no-feedback">No feedback yet</div>
+                              )}
+                            </td>
+                            {isEventStarted() && (
+                              <td>
+                                {attendanceStatus ? (
+                                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                    <span className={`attendance-status ${attendanceStatus}`}>
+                                      {attendanceStatus === 'present' ? <CheckCircle2 size={16} /> : <XCircle size={16} />}
+                                      {attendanceStatus === 'present' ? 'Present' : 'Absent'}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <div className="attendance-buttons">
+                                    <button
+                                      className="present-btn"
+                                      onClick={() => markAttendance(participant._id, 'present')}
+                                      disabled={isMarking}
+                                    >
+                                      <CheckCircle2 size={14} />
+                                      Present
+                                    </button>
+                                    <button
+                                      className="absent-btn"
+                                      onClick={() => markAttendance(participant._id, 'absent')}
+                                      disabled={isMarking}
+                                    >
+                                      <XCircle size={14} />
+                                      Absent
+                                    </button>
+                                  </div>
+                                )}
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </>
   );
 };
 
