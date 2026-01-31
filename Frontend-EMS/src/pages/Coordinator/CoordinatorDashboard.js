@@ -71,6 +71,7 @@ const CreateEvent = () => {
   const [additionalImage2File, setAdditionalImage2File] = useState(null);
   const [additionalImage2Preview, setAdditionalImage2Preview] = useState(null);
   const [additionalImage3File, setAdditionalImage3File] = useState(null);
+  // eslint-disable-next-line no-unused-vars
   const [additionalImage3Preview, setAdditionalImage3Preview] = useState(null);
 
   // State for 3 additional descriptions
